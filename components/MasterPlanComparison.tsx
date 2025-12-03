@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ProjectInfo, ProjectName, Language } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -194,6 +195,14 @@ const MasterPlanComparison: React.FC<MasterPlanComparisonProps> = ({ projects, l
                 {projects.map(p => (
                   <td key={p.name} className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-mono">
                     {p.buildings}
+                  </td>
+                ))}
+              </tr>
+              <tr className="hover:bg-slate-50 bg-slate-50/50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{t.metrics.facilityDensity}</td>
+                {projects.map(p => (
+                  <td key={p.name} className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-mono">
+                    {p.masterPlan.facilityDensity}
                   </td>
                 ))}
               </tr>

@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from 'react';
 import { RAW_DATA, PROJECT_SPECS } from './data';
 import { ProjectName, Language, ProjectInfo } from './types';
@@ -7,7 +8,10 @@ import AnalysisChart from './components/AnalysisChart';
 import UnitTable from './components/UnitTable';
 import MasterPlanComparison from './components/MasterPlanComparison';
 import SizeDistributionChart from './components/SizeDistributionChart';
-import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Map, Globe, Sparkles } from 'lucide-react';
+import AudienceAnalysis from './components/AudienceAnalysis';
+import ProjectMap from './components/ProjectMap';
+import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Map, Globe, Sparkles, Users } from 'lucide-react';
+import { useFilters } from './contexts/FilterContext';
 
 const FacilityGroup = ({ facilities, lang }: { facilities: string[], lang: Language }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -31,7 +35,7 @@ const FacilityGroup = ({ facilities, lang }: { facilities: string[], lang: Langu
   }
 
   const visibleCount = 5;
-  const visible = facilities.slice(0, visibleCount);
+  const visible = facilities.slice(visibleCount);
   const hidden = facilities.slice(visibleCount);
 
   if (hidden.length === 0) {
@@ -78,87 +82,19 @@ const FacilityGroup = ({ facilities, lang }: { facilities: string[], lang: Langu
 };
 
 const App = () => {
-  const [selectedProjects, setSelectedProjects] = useState<Set<ProjectName>>(
-    new Set([ProjectName.CORALINA, ProjectName.SERENITY, ProjectName.SIERRA])
-  );
-  
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
-  const [selectedSubCategories, setSelectedSubCategories] = useState<Set<string>>(new Set());
-  const [selectedFacilities, setSelectedFacilities] = useState<Set<string>>(new Set());
-  const [analysisMode, setAnalysisMode] = useState<'facilities' | 'units' | 'masterplan'>('facilities');
-  const [lang, setLang] = useState<Language>('en');
+  const {
+    lang, setLang,
+    analysisMode, setAnalysisMode,
+    selectedProjects, toggleProject,
+    selectedCategories, toggleCategory,
+    selectedSubCategories, toggleSubCategory,
+    selectedFacilities, toggleFacility,
+    sizeFilter, handleSizeChange,
+    allCategories, allSubCategories, allFacilities,
+    filteredSpecs, filteredData
+  } = useFilters();
 
   const t = translations[lang];
-
-  // Initialize size range based on data
-  const [sizeFilter, setSizeFilter] = useState(() => {
-    const sizes = RAW_DATA.flatMap(d => [d.minSize, d.maxSize]);
-    const min = Math.floor(Math.min(...sizes));
-    const max = Math.ceil(Math.max(...sizes));
-    return {
-      globalMin: min,
-      globalMax: max,
-      currentMin: min,
-      currentMax: max
-    };
-  });
-
-  // Extract all available categories for the filter
-  const allCategories = useMemo(() => {
-    return Array.from(new Set(RAW_DATA.map(d => d.category))).sort();
-  }, []);
-
-  // Extract all available sub-categories
-  const allSubCategories = useMemo(() => {
-    return Array.from(new Set(RAW_DATA.map(d => d.subCategory))).sort();
-  }, []);
-
-  // Extract all available facilities for the filter
-  const allFacilities = useMemo(() => {
-    return Array.from(new Set(PROJECT_SPECS.flatMap(p => p.facilities))).sort();
-  }, []);
-
-  const filteredSpecs = useMemo(() => {
-    return PROJECT_SPECS.filter(spec => {
-      // 1. Must be in selectedProjects
-      if (!selectedProjects.has(spec.name)) return false;
-      
-      // 2. If in facilities mode, check facility filter
-      if (analysisMode === 'facilities' && selectedFacilities.size > 0) {
-         // AND logic: must have ALL selected facilities
-         const hasAll = Array.from(selectedFacilities).every(f => spec.facilities.includes(f));
-         if (!hasAll) return false;
-      }
-      return true;
-    });
-  }, [selectedProjects, selectedFacilities, analysisMode]);
-
-  const filteredData = useMemo(() => {
-    // Get names of valid projects based on all filters applied to specs
-    const validProjectNames = new Set(filteredSpecs.map(p => p.name));
-
-    return RAW_DATA.filter(item => {
-      const projectMatch = validProjectNames.has(item.project);
-      
-      // If we are not in 'units' mode, we usually care about the project level data
-      // or we want to see ALL units for the project without specific filtering.
-      // However, if the user explicitly wants to filter units, they should be in 'units' mode.
-      if (analysisMode !== 'units') {
-        return projectMatch;
-      }
-
-      if (!projectMatch) return false;
-
-      const categoryMatch = selectedCategories.size === 0 || selectedCategories.has(item.category);
-      const subCategoryMatch = selectedSubCategories.size === 0 || selectedSubCategories.has(item.subCategory);
-      
-      // Check if unit size range overlaps with filter range
-      // Overlap exists if (UnitMin <= FilterMax) and (UnitMax >= FilterMin)
-      const sizeMatch = item.minSize <= sizeFilter.currentMax && item.maxSize >= sizeFilter.currentMin;
-
-      return categoryMatch && subCategoryMatch && sizeMatch;
-    });
-  }, [filteredSpecs, selectedCategories, selectedSubCategories, sizeFilter, analysisMode]);
 
   // Prepare data for SetAnalysis based on mode
   const setAnalysisData = useMemo(() => {
@@ -175,7 +111,7 @@ const App = () => {
         [ProjectName.SIERRA]: getProjectData(ProjectName.SIERRA, p => p?.facilities || []),
       };
     } else {
-      // Aggregate unit categories from RAW_DATA
+      // Aggregate unit categories from RAW_DATA for visible projects
       const getCats = (proj: ProjectName) => {
         if (!filteredSpecs.find(p => p.name === proj)) return [];
         return Array.from(new Set(RAW_DATA.filter(d => d.project === proj).map(d => d.category)));
@@ -189,47 +125,11 @@ const App = () => {
     }
   }, [analysisMode, filteredSpecs]);
 
-  const toggleProject = (proj: ProjectName) => {
-    const next = new Set(selectedProjects);
-    if (next.has(proj)) next.delete(proj);
-    else next.add(proj);
-    setSelectedProjects(next);
-  };
-
-  const toggleCategory = (cat: string) => {
-    const next = new Set(selectedCategories);
-    if (next.has(cat)) next.delete(cat);
-    else next.add(cat);
-    setSelectedCategories(next);
-  };
-
-  const toggleSubCategory = (sub: string) => {
-    const next = new Set(selectedSubCategories);
-    if (next.has(sub)) next.delete(sub);
-    else next.add(sub);
-    setSelectedSubCategories(next);
-  };
-
-  const toggleFacility = (fac: string) => {
-    const next = new Set(selectedFacilities);
-    if (next.has(fac)) next.delete(fac);
-    else next.add(fac);
-    setSelectedFacilities(next);
-  };
-
-  const handleSizeChange = (type: 'min' | 'max', value: string) => {
-    const val = parseInt(value) || 0;
-    setSizeFilter(prev => ({
-      ...prev,
-      [type === 'min' ? 'currentMin' : 'currentMax']: val
-    }));
-  };
-
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row bg-slate-50 text-slate-900 font-sans">
       
       {/* Sidebar Filter */}
-      <aside className="w-full md:w-64 bg-white border-r border-slate-200 md:h-screen md:sticky md:top-0 overflow-y-auto z-10 shrink-0">
+      <aside className="w-full md:w-64 bg-white border-r border-slate-200 overflow-y-auto z-10 shrink-0 custom-scrollbar h-auto md:h-full">
         <div className="p-6 border-b border-slate-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-indigo-700">
@@ -277,6 +177,12 @@ const App = () => {
               <Filter className="w-3 h-3" /> {t.sidebar.analysisFocus}
             </h3>
             <div className="flex flex-col gap-1 p-1 bg-slate-100 rounded-lg">
+              <button 
+                onClick={() => setAnalysisMode('audience')}
+                className={`w-full flex items-center justify-center gap-1 text-xs py-1.5 rounded-md font-medium transition-all ${analysisMode === 'audience' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                <Users className="w-3 h-3" /> {t.sidebar.audience}
+              </button>
               <div className="flex gap-1">
                 <button 
                   onClick={() => setAnalysisMode('facilities')}
@@ -330,8 +236,8 @@ const App = () => {
             </div>
           )}
 
-          {/* Unit Specific Filters - Only shown in 'units' mode */}
-          {analysisMode === 'units' && (
+          {/* Unit Specific Filters - Shown in 'units' AND 'audience' modes because audience scoring depends on unit mix */}
+          {(analysisMode === 'units' || analysisMode === 'audience') && (
             <div className="space-y-8 animate-fadeIn">
               <div className="h-px bg-slate-200 my-4" /> 
               
@@ -421,7 +327,7 @@ const App = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto custom-scrollbar h-auto md:h-full">
         <div className="max-w-7xl mx-auto space-y-8">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -461,6 +367,10 @@ const App = () => {
                     <Home className="w-4 h-4 shrink-0" />
                     <span>{spec.buildings} {t.stats.buildings}, {spec.storeys} {t.stats.storeys}</span>
                   </div>
+                  <div className="flex items-center gap-3 text-slate-600">
+                    <Layers className="w-4 h-4 shrink-0" />
+                    <span>{spec.masterPlan.facilityDensity} {t.stats.facilityDensity}</span>
+                  </div>
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-slate-100">
@@ -471,7 +381,17 @@ const App = () => {
             ))}
           </div>
 
+          {/* Map Section */}
+          <section className="animate-fadeIn">
+            <ProjectMap projects={filteredSpecs} lang={lang} />
+          </section>
+
           {/* Conditional Analysis Content */}
+
+          {analysisMode === 'audience' && (
+             <AudienceAnalysis projects={filteredSpecs} allUnits={filteredData} lang={lang} />
+          )}
+
           {analysisMode === 'masterplan' && (
             <section>
               <div className="flex items-center justify-between mb-4">

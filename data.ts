@@ -1,3 +1,4 @@
+
 import { UnitPlan, ProjectName, ProjectInfo } from './types';
 
 // Normalized Facility Tags for Analysis
@@ -31,6 +32,10 @@ export const PROJECT_SPECS: ProjectInfo[] = [
       en: 'Kamala Beach (430m to beach)',
       ru: 'Пляж Камала (430м до моря)'
     },
+    coordinates: {
+      lat: 7.951933,
+      lng: 98.283483
+    },
     unitTypes: ['1 Bedroom', '1 Bedroom Plus', '2 Bedroom', '2 Bedroom Plus', '2 Bedroom Penthouse', '3 Bedroom Penthouse'],
     facilities: [
       FACILITIES.POOL, FACILITIES.GYM, FACILITIES.COWORKING, FACILITIES.PETS, 
@@ -42,6 +47,7 @@ export const PROJECT_SPECS: ProjectInfo[] = [
       greenSpaceRatio: 16.0, 
       commonAreaPerUnit: 9.9, 
       totalCommonArea: 5600,
+      facilityDensity: 1.5,
       distinctZones: [
         { en: 'Quiet Zone', ru: 'Тихая зона' },
         { en: 'Active Zone', ru: 'Активная зона' },
@@ -86,6 +92,10 @@ export const PROJECT_SPECS: ProjectInfo[] = [
       en: 'Naiyang Beach (400m to beach)',
       ru: 'Пляж Найянг (400м до моря)'
     },
+    coordinates: {
+      lat: 8.086300,
+      lng: 98.298200
+    },
     unitTypes: ['1 Bedroom', '2 Bedroom', '3 Bedroom'],
     facilities: [
       FACILITIES.POOL, FACILITIES.GYM, FACILITIES.COWORKING, FACILITIES.ONSEN,
@@ -97,6 +107,7 @@ export const PROJECT_SPECS: ProjectInfo[] = [
       greenSpaceRatio: 17.0, 
       commonAreaPerUnit: 4.6, 
       totalCommonArea: 3750,
+      facilityDensity: 2.0,
       distinctZones: [
         { en: 'Lagoon Center', ru: 'Центральная лагуна' },
         { en: 'Separate Parking Bldg', ru: 'Отдельное здание парковки' },
@@ -141,6 +152,10 @@ export const PROJECT_SPECS: ProjectInfo[] = [
       en: 'Bang-Tao (Near Boat Avenue)',
       ru: 'Банг-Тао (Рядом с Boat Avenue)'
     },
+    coordinates: {
+      lat: 7.993000,
+      lng: 98.304000
+    },
     unitTypes: ['1 Bedroom', '1 Bedroom Plus', '2 Bedroom'],
     facilities: [
       FACILITIES.POOL, FACILITIES.GYM, FACILITIES.COWORKING, FACILITIES.PETS,
@@ -152,6 +167,7 @@ export const PROJECT_SPECS: ProjectInfo[] = [
       greenSpaceRatio: 25.2, 
       commonAreaPerUnit: 3.4, 
       totalCommonArea: 1525,
+      facilityDensity: 4.0,
       distinctZones: [
         { en: 'Pet Building (C)', ru: 'Корпус для питомцев (C)' },
         { en: 'Sky Facilities', ru: 'Удобства на крыше' },

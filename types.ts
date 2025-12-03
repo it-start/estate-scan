@@ -1,3 +1,4 @@
+
 export type Language = 'en' | 'ru';
 
 export interface LocalizedString {
@@ -9,6 +10,11 @@ export enum ProjectName {
   CORALINA = 'Coralina',
   SERENITY = 'Serenity',
   SIERRA = 'Sierra'
+}
+
+export interface Coordinates {
+  lat: number;
+  lng: number;
 }
 
 export interface UnitPlan {
@@ -28,6 +34,7 @@ export interface MasterPlanMetrics {
   commonAreaPerUnit: number; // sqm per unit
   totalCommonArea: number;
   distinctZones: LocalizedString[];
+  facilityDensity: number; // Unique facilities per building
 }
 
 export interface LayoutFeature {
@@ -44,6 +51,7 @@ export interface ProjectInfo {
   buildings: number;
   storeys: number;
   location: LocalizedString;
+  coordinates: Coordinates;
   facilities: string[];
   unitTypes: string[];
   masterPlan: MasterPlanMetrics;

@@ -1,3 +1,4 @@
+
 import { Language } from './types';
 
 export const translations = {
@@ -10,6 +11,7 @@ export const translations = {
       facilities: "Facilities",
       unitTypes: "Unit Types",
       masterPlan: "Master Plan",
+      audience: "Audience Fit", // New
       unitSize: "Unit Size (SQ.M)",
       unitCategories: "Unit Categories",
       subCategories: "Sub-Categories",
@@ -24,7 +26,12 @@ export const translations = {
       keyFacilities: "Key Facilities",
       more: "more",
       showLess: "Show less",
-      viewMap: "View Map"
+      viewMap: "View Map",
+      facilityDensity: "Facilities / Bldg",
+    },
+    map: {
+        title: "Project Locations",
+        subtitle: "Geographic distribution across Phuket (Kamala, Naiyang, Bang-Tao)."
     },
     masterPlan: {
       densityTradeOff: "Density Trade-off",
@@ -45,7 +52,8 @@ export const translations = {
         landArea: "Land Area (sqm)",
         commonArea: "Total Common Area (sqm)",
         totalUnits: "Total Units",
-        buildings: "Buildings"
+        buildings: "Buildings",
+        facilityDensity: "Facility Density (Amenities/Bldg)",
       },
       radarTitle: "Lifestyle DNA",
       radarSubtitle: "Qualitative analysis based on facility mix and zoning.",
@@ -54,6 +62,32 @@ export const translations = {
       axis: {
         density: "Density (Units/Rai)",
         luxury: "Amenity Space (SQM/Unit)"
+      }
+    },
+    audience: {
+      title: "Audience Segmentation & Persona Fit",
+      subtitle: "Algorithmic scoring based on unit mix, amenities, and layout.",
+      personas: {
+        investor: "Investor",
+        nomad: "Digital Nomad",
+        family: "Family",
+        retiree: "Retiree / Wellness",
+      },
+      quadrant: {
+        title: "Yield vs. Livability Matrix",
+        subtitle: "Mapping projects by Investment Potential vs. Long-term Living Comfort.",
+        xAxis: "Investment Potential (Compactness & Efficiency)",
+        yAxis: "Livability Score (Wellness & Space)",
+        quadrants: {
+          q1: "Cash Cow", // High Inv, Low Live
+          q2: "The Unicorn", // High Inv, High Live
+          q3: "Luxury Residence", // Low Inv, High Live
+          q4: "Niche / Speculative" // Low Inv, Low Live
+        }
+      },
+      mix: {
+        title: "Inventory Segmentation",
+        subtitle: "Compact vs. Spacious Unit Ratio"
       }
     },
     setAnalysis: {
@@ -95,6 +129,7 @@ export const translations = {
       facilities: "Удобства",
       unitTypes: "Типы юнитов",
       masterPlan: "Генплан",
+      audience: "Целевая аудитория", // New
       unitSize: "Площадь (кв.м)",
       unitCategories: "Категории юнитов",
       subCategories: "Подкатегории",
@@ -109,7 +144,12 @@ export const translations = {
       keyFacilities: "Ключевые удобства",
       more: "еще",
       showLess: "Свернуть",
-      viewMap: "Карта"
+      viewMap: "Карта",
+      facilityDensity: "Удобств / Корпус",
+    },
+    map: {
+        title: "Локации проектов",
+        subtitle: "Географическое распределение по Пхукету (Камала, Найянг, Банг-Тао)."
     },
     masterPlan: {
       densityTradeOff: "Плотность застройки",
@@ -130,7 +170,8 @@ export const translations = {
         landArea: "Площадь участка (кв.м)",
         commonArea: "Общая площадь удобств (кв.м)",
         totalUnits: "Всего юнитов",
-        buildings: "Количество зданий"
+        buildings: "Количество зданий",
+        facilityDensity: "Плотность удобств (Шт/Корпус)",
       },
       radarTitle: "ДНК Лайфстайла",
       radarSubtitle: "Качественный анализ на основе инфраструктуры и зонирования.",
@@ -139,6 +180,32 @@ export const translations = {
       axis: {
         density: "Плотность (Юнитов/Рай)",
         luxury: "Площадь удобств (кв.м/юнит)"
+      }
+    },
+    audience: {
+      title: "Сегментация аудитории",
+      subtitle: "Алгоритмическая оценка на основе микса юнитов и инфраструктуры.",
+      personas: {
+        investor: "Инвестор",
+        nomad: "Цифровой кочевник",
+        family: "Семья",
+        retiree: "Пенсионер / Велнес",
+      },
+      quadrant: {
+        title: "Матрица: Доходность vs. Комфорт",
+        subtitle: "Карта проектов: Инвестиционный потенциал vs. Долгосрочное проживание.",
+        xAxis: "Инвест-потенциал (Компактность)",
+        yAxis: "Индекс комфорта (Велнес и Простор)",
+        quadrants: {
+          q1: "Cash Cow", 
+          q2: "Единорог",
+          q3: "Резиденция Люкс",
+          q4: "Спекулятивный"
+        }
+      },
+      mix: {
+        title: "Сегментация инвентаря",
+        subtitle: "Соотношение компактных и просторных юнитов"
       }
     },
     setAnalysis: {
