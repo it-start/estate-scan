@@ -1,8 +1,9 @@
+
 import React, { useMemo } from 'react';
 import { ProjectInfo, ProjectName, Language, UnitPlan } from '../types';
 import { translations } from '../translations';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine, Label } from 'recharts';
-import { TrendingUp, Heart, Briefcase, Palmtree, Info } from 'lucide-react';
+import { TrendingUp, Heart, Briefcase, Palmtree } from 'lucide-react';
 
 interface AudienceAnalysisProps {
   projects: ProjectInfo[];

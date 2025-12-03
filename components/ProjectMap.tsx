@@ -4,7 +4,6 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { ProjectInfo, ProjectName, Language } from '../types';
 import { translations } from '../translations';
-import { MapPin } from 'lucide-react';
 
 interface ProjectMapProps {
   projects: ProjectInfo[];
