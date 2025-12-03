@@ -1,0 +1,5 @@
+{
+  "name": "Estate Unit Analyzer",
+  "description": "A technical analysis dashboard for real estate unit plans, focusing on set theory operations (union/intersection) and dimensional analysis of Coralina, Serenity, and Sierra projects.",
+  "requestFramePermissions": []
+}
