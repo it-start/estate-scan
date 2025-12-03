@@ -6,6 +6,7 @@ import SetAnalysis from './components/SetAnalysis';
 import AnalysisChart from './components/AnalysisChart';
 import UnitTable from './components/UnitTable';
 import MasterPlanComparison from './components/MasterPlanComparison';
+import SizeDistributionChart from './components/SizeDistributionChart';
 import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Map, Globe, Sparkles } from 'lucide-react';
 
 const FacilityGroup = ({ facilities, lang }: { facilities: string[], lang: Language }) => {
@@ -510,9 +511,13 @@ const App = () => {
               </section>
 
               {/* Charts Section */}
-              <section className="grid grid-cols-1 gap-6">
-                <h3 className="text-lg font-bold text-slate-800">{t.charts.avgUnitSize}</h3>
-                <AnalysisChart data={filteredData} lang={lang} />
+              <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                 <div>
+                    <SizeDistributionChart data={filteredData} lang={lang} />
+                 </div>
+                 <div>
+                    <AnalysisChart data={filteredData} lang={lang} />
+                 </div>
               </section>
 
               {/* Grid Section */}

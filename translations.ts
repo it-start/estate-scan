@@ -46,6 +46,14 @@ export const translations = {
         commonArea: "Total Common Area (sqm)",
         totalUnits: "Total Units",
         buildings: "Buildings"
+      },
+      radarTitle: "Lifestyle DNA",
+      radarSubtitle: "Qualitative analysis based on facility mix and zoning.",
+      scatterTitle: "Strategic Positioning Matrix",
+      scatterSubtitle: "Density vs. Amenity Luxury. Larger bubbles = More Green Space.",
+      axis: {
+        density: "Density (Units/Rai)",
+        luxury: "Amenity Space (SQM/Unit)"
       }
     },
     setAnalysis: {
@@ -65,7 +73,9 @@ export const translations = {
       sierraOnly: "Sierra Only"
     },
     charts: {
-      avgUnitSize: "Average Unit Size by Category (SQ.M)"
+      avgUnitSize: "Average Unit Size by Category (SQ.M)",
+      sizeDist: "Unit Size Distribution",
+      sizeDistSubtitle: "Inventory breakdown by size range."
     },
     table: {
       title: "Unit Inventory",
@@ -121,6 +131,14 @@ export const translations = {
         commonArea: "Общая площадь удобств (кв.м)",
         totalUnits: "Всего юнитов",
         buildings: "Количество зданий"
+      },
+      radarTitle: "ДНК Лайфстайла",
+      radarSubtitle: "Качественный анализ на основе инфраструктуры и зонирования.",
+      scatterTitle: "Матрица позиционирования",
+      scatterSubtitle: "Плотность vs. Роскошь удобств. Размер круга = % озеленения.",
+      axis: {
+        density: "Плотность (Юнитов/Рай)",
+        luxury: "Площадь удобств (кв.м/юнит)"
       }
     },
     setAnalysis: {
@@ -140,7 +158,9 @@ export const translations = {
       sierraOnly: "Только Sierra"
     },
     charts: {
-      avgUnitSize: "Средняя площадь по категории (кв.м)"
+      avgUnitSize: "Средняя площадь по категории (кв.м)",
+      sizeDist: "Распределение по площади",
+      sizeDistSubtitle: "Структура инвентаря по диапазонам размеров."
     },
     table: {
       title: "Реестр юнитов",

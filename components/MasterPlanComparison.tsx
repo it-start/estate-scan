@@ -3,6 +3,8 @@ import { ProjectInfo, ProjectName, Language } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Maximize2, Users, Trees, Home, PawPrint, Building, ArrowUpCircle } from 'lucide-react';
 import { translations, featureCategoryTranslations, translate } from '../translations';
+import LifestyleRadar from './LifestyleRadar';
+import StrategicScatter from './StrategicScatter';
 
 interface MasterPlanComparisonProps {
   projects: ProjectInfo[];
@@ -135,6 +137,12 @@ const MasterPlanComparison: React.FC<MasterPlanComparisonProps> = ({ projects, l
             </div>
           </div>
         </div>
+      </div>
+
+      {/* NEW: Advanced Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <LifestyleRadar projects={projects} lang={lang} />
+        <StrategicScatter projects={projects} lang={lang} />
       </div>
 
       {/* Metrics Comparison Table */}
