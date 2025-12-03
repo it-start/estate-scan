@@ -1,12 +1,80 @@
 import React, { useState, useMemo } from 'react';
 import { RAW_DATA, PROJECT_SPECS } from './data';
 import { ProjectName, Language } from './types';
-import { translations, categoryTranslations, translate } from './translations';
+import { translations, categoryTranslations, translate, facilityTranslations } from './translations';
 import SetAnalysis from './components/SetAnalysis';
 import AnalysisChart from './components/AnalysisChart';
 import UnitTable from './components/UnitTable';
 import MasterPlanComparison from './components/MasterPlanComparison';
 import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, ArrowRightLeft, Map, Globe } from 'lucide-react';
+
+const FacilityGroup = ({ facilities, lang }: { facilities: string[], lang: Language }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  if (isExpanded) {
+    return (
+      <div className="flex flex-wrap gap-1">
+        {facilities.map(f => (
+          <span key={f} className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 text-[10px] rounded">
+            {translate(f, lang, facilityTranslations)}
+          </span>
+        ))}
+        <button 
+          onClick={() => setIsExpanded(false)}
+          className="px-1.5 py-0.5 text-indigo-600 hover:text-indigo-800 text-[10px] font-medium bg-indigo-50 rounded hover:bg-indigo-100 transition-colors"
+        >
+          {translations[lang].stats.showLess}
+        </button>
+      </div>
+    );
+  }
+
+  const visibleCount = 5;
+  const visible = facilities.slice(0, visibleCount);
+  const hidden = facilities.slice(visibleCount);
+
+  if (hidden.length === 0) {
+     return (
+      <div className="flex flex-wrap gap-1">
+        {visible.map(f => (
+          <span key={f} className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 text-[10px] rounded">
+            {translate(f, lang, facilityTranslations)}
+          </span>
+        ))}
+      </div>
+     );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {visible.map(f => (
+        <span key={f} className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 text-[10px] rounded">
+          {translate(f, lang, facilityTranslations)}
+        </span>
+      ))}
+      
+      <div className="relative group">
+        <button
+          onClick={() => setIsExpanded(true)}
+          className="px-1.5 py-0.5 text-slate-500 bg-slate-100 border border-transparent hover:border-slate-200 hover:bg-slate-200 rounded text-[10px] transition-all cursor-pointer font-medium"
+        >
+          + {hidden.length} {translations[lang].stats.more}
+        </button>
+        
+        {/* Tooltip on hover */}
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[200px] p-2 bg-slate-800 text-white text-[10px] rounded shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none text-center">
+            <div className="flex flex-col gap-1">
+                {hidden.map(f => (
+                    <span key={f} className="whitespace-nowrap">{translate(f, lang, facilityTranslations)}</span>
+                ))}
+            </div>
+            {/* Tooltip Arrow */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const App = () => {
   const [selectedProjects, setSelectedProjects] = useState<Set<ProjectName>>(
@@ -314,24 +382,7 @@ const App = () => {
 
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <p className="text-xs font-semibold text-slate-500 uppercase mb-2">{t.stats.keyFacilities}</p>
-                  <div className="flex flex-wrap gap-1">
-                    {spec.facilities.slice(0, 5).map(f => (
-                      <span key={f} className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 text-[10px] rounded">
-                        {/* Assuming facility strings can be mapped if strict, or passed as is if English. 
-                            Since we only have mapping in translations.ts, we need to use it.
-                        */}
-                        {/* Simple lookup assuming 'f' matches keys in facilityTranslations */}
-                        {/* If not found, fallback to 'f' */}
-                        {/* Note: data.ts uses variables for facilities but the value is 'Swimming Pool' etc. which matches keys. */}
-                        {translate(f, lang, import('./translations').then(m => m.facilityTranslations) as any) || f} 
-                        {/* Actually, imports are async. Let's fix this by importing facilityTranslations at top */}
-                        {/* Fixed in line 14 import */}
-                      </span>
-                    ))}
-                    {spec.facilities.length > 5 && (
-                      <span className="px-1.5 py-0.5 text-slate-400 text-[10px]">+ {spec.facilities.length - 5} {t.stats.more}</span>
-                    )}
-                  </div>
+                  <FacilityGroup facilities={spec.facilities} lang={lang} />
                 </div>
               </div>
             ))}

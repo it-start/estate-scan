@@ -23,6 +23,7 @@ export const translations = {
       rai: "Rai",
       keyFacilities: "Key Facilities",
       more: "more",
+      showLess: "Show less",
       viewMap: "View Map"
     },
     masterPlan: {
@@ -97,6 +98,7 @@ export const translations = {
       rai: "Рай",
       keyFacilities: "Ключевые удобства",
       more: "еще",
+      showLess: "Свернуть",
       viewMap: "Карта"
     },
     masterPlan: {
