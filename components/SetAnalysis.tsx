@@ -10,7 +10,7 @@ interface SetAnalysisProps {
   mode: 'facilities' | 'units' | 'masterplan';
 }
 
-const SetAnalysis: React.FC<SetAnalysisProps> = ({ title, dataSets, lang, mode }) => {
+const SetAnalysis: React.FC<SetAnalysisProps> = ({ dataSets, lang, mode }) => {
   const t = translations[lang].setAnalysis;
   
   const analysis = useMemo(() => {

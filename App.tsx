@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { RAW_DATA, PROJECT_SPECS } from './data';
 import { ProjectName, Language, ProjectInfo } from './types';
 import { translations, categoryTranslations, translate, facilityTranslations } from './translations';

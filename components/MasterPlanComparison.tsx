@@ -1,6 +1,6 @@
 import React from 'react';
 import { ProjectInfo, ProjectName, Language } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Maximize2, Users, Trees, Home, PawPrint, Building, ArrowUpCircle } from 'lucide-react';
 import { translations, featureCategoryTranslations, translate } from '../translations';
 
