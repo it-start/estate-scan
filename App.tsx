@@ -6,7 +6,7 @@ import SetAnalysis from './components/SetAnalysis';
 import AnalysisChart from './components/AnalysisChart';
 import UnitTable from './components/UnitTable';
 import MasterPlanComparison from './components/MasterPlanComparison';
-import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, ArrowRightLeft, Map, Globe } from 'lucide-react';
+import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Map, Globe } from 'lucide-react';
 
 const FacilityGroup = ({ facilities, lang }: { facilities: string[], lang: Language }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -114,6 +114,14 @@ const App = () => {
   const filteredData = useMemo(() => {
     return RAW_DATA.filter(item => {
       const projectMatch = selectedProjects.has(item.project);
+      
+      // If we are not in 'units' mode, we usually care about the project level data
+      // or we want to see ALL units for the project without specific filtering.
+      // However, if the user explicitly wants to filter units, they should be in 'units' mode.
+      if (analysisMode !== 'units') {
+        return projectMatch;
+      }
+
       const categoryMatch = selectedCategories.size === 0 || selectedCategories.has(item.category);
       const subCategoryMatch = selectedSubCategories.size === 0 || selectedSubCategories.has(item.subCategory);
       
@@ -123,7 +131,7 @@ const App = () => {
 
       return projectMatch && categoryMatch && subCategoryMatch && sizeMatch;
     });
-  }, [selectedProjects, selectedCategories, selectedSubCategories, sizeFilter]);
+  }, [selectedProjects, selectedCategories, selectedSubCategories, sizeFilter, analysisMode]);
 
   const filteredSpecs = useMemo(() => {
     return PROJECT_SPECS.filter(spec => selectedProjects.has(spec.name));
@@ -254,85 +262,92 @@ const App = () => {
             </div>
           </div>
 
-          {/* Size Range Filter */}
-          <div>
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Ruler className="w-3 h-3" /> {t.sidebar.unitSize}
-            </h3>
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <input 
-                  type="number" 
-                  value={sizeFilter.currentMin}
-                  onChange={(e) => handleSizeChange('min', e.target.value)}
-                  className="w-full pl-2 pr-1 py-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Min"
-                />
-              </div>
-              <span className="text-slate-400 text-xs">-</span>
-              <div className="relative flex-1">
-                <input 
-                  type="number" 
-                  value={sizeFilter.currentMax}
-                  onChange={(e) => handleSizeChange('max', e.target.value)}
-                  className="w-full pl-2 pr-1 py-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Max"
-                />
-              </div>
-            </div>
-            <div className="flex justify-between mt-1 text-[10px] text-slate-400">
-              <span>Min: {sizeFilter.globalMin}</span>
-              <span>Max: {sizeFilter.globalMax}</span>
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <div>
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <LayoutGrid className="w-3 h-3" /> {t.sidebar.unitCategories}
-            </h3>
-            <div className="space-y-2">
-              {allCategories.map(cat => (
-                <label key={cat} className="flex items-center gap-3 cursor-pointer group">
-                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedCategories.has(cat) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white group-hover:border-indigo-400'}`}>
-                    {selectedCategories.has(cat) && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+          {/* Unit Specific Filters - Only shown in 'units' mode */}
+          {analysisMode === 'units' && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="h-px bg-slate-200 my-4" /> 
+              
+              {/* Size Range Filter */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Ruler className="w-3 h-3" /> {t.sidebar.unitSize}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <input 
+                      type="number" 
+                      value={sizeFilter.currentMin}
+                      onChange={(e) => handleSizeChange('min', e.target.value)}
+                      className="w-full pl-2 pr-1 py-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Min"
+                    />
                   </div>
-                  <input 
-                    type="checkbox" 
-                    className="hidden" 
-                    checked={selectedCategories.has(cat)}
-                    onChange={() => toggleCategory(cat)}
-                  />
-                  <span className="text-sm font-medium text-slate-700 group-hover:text-indigo-700 transition-colors">
-                    {translate(cat, lang, categoryTranslations)}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Sub-Category Filter */}
-          <div>
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Tags className="w-3 h-3" /> {t.sidebar.subCategories}
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {allSubCategories.map(sub => (
-                <label key={sub} className="flex items-center gap-2 cursor-pointer group">
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedSubCategories.has(sub) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white group-hover:border-indigo-400'}`}>
-                    {selectedSubCategories.has(sub) && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                  <span className="text-slate-400 text-xs">-</span>
+                  <div className="relative flex-1">
+                    <input 
+                      type="number" 
+                      value={sizeFilter.currentMax}
+                      onChange={(e) => handleSizeChange('max', e.target.value)}
+                      className="w-full pl-2 pr-1 py-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="Max"
+                    />
                   </div>
-                  <input 
-                    type="checkbox" 
-                    className="hidden" 
-                    checked={selectedSubCategories.has(sub)}
-                    onChange={() => toggleSubCategory(sub)}
-                  />
-                  <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-700 transition-colors truncate">{sub}</span>
-                </label>
-              ))}
+                </div>
+                <div className="flex justify-between mt-1 text-[10px] text-slate-400">
+                  <span>Min: {sizeFilter.globalMin}</span>
+                  <span>Max: {sizeFilter.globalMax}</span>
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <LayoutGrid className="w-3 h-3" /> {t.sidebar.unitCategories}
+                </h3>
+                <div className="space-y-2">
+                  {allCategories.map(cat => (
+                    <label key={cat} className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedCategories.has(cat) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white group-hover:border-indigo-400'}`}>
+                        {selectedCategories.has(cat) && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                      </div>
+                      <input 
+                        type="checkbox" 
+                        className="hidden" 
+                        checked={selectedCategories.has(cat)}
+                        onChange={() => toggleCategory(cat)}
+                      />
+                      <span className="text-sm font-medium text-slate-700 group-hover:text-indigo-700 transition-colors">
+                        {translate(cat, lang, categoryTranslations)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sub-Category Filter */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Tags className="w-3 h-3" /> {t.sidebar.subCategories}
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {allSubCategories.map(sub => (
+                    <label key={sub} className="flex items-center gap-2 cursor-pointer group">
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${selectedSubCategories.has(sub) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white group-hover:border-indigo-400'}`}>
+                        {selectedSubCategories.has(sub) && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                      </div>
+                      <input 
+                        type="checkbox" 
+                        className="hidden" 
+                        checked={selectedSubCategories.has(sub)}
+                        onChange={() => toggleSubCategory(sub)}
+                      />
+                      <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-700 transition-colors truncate">{sub}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </aside>
@@ -389,31 +404,45 @@ const App = () => {
           </div>
 
           {/* Conditional Analysis Content */}
-          {analysisMode === 'masterplan' ? (
+          {analysisMode === 'masterplan' && (
             <section>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-slate-800">{t.sidebar.masterPlan}</h3>
               </div>
               <MasterPlanComparison projects={filteredSpecs} lang={lang} />
             </section>
-          ) : (
+          )}
+
+          {analysisMode === 'facilities' && (
+            <section>
+               <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-slate-800">{t.setAnalysis.amenitiesTitle}</h3>
+               </div>
+               <SetAnalysis 
+                  title={t.setAnalysis.amenitiesTitle}
+                  dataSets={setAnalysisData} 
+                  lang={lang}
+                  mode="facilities"
+                />
+            </section>
+          )}
+
+          {analysisMode === 'units' && (
             <>
               {/* Set Analysis Section */}
               <section>
                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-slate-800">
-                      {analysisMode === 'facilities' ? t.setAnalysis.amenitiesTitle : t.setAnalysis.unitCatsTitle}
-                    </h3>
+                    <h3 className="text-lg font-bold text-slate-800">{t.setAnalysis.unitCatsTitle}</h3>
                  </div>
                  <SetAnalysis 
-                    title={analysisMode === 'facilities' ? t.setAnalysis.amenitiesTitle : t.setAnalysis.unitCatsTitle}
+                    title={t.setAnalysis.unitCatsTitle}
                     dataSets={setAnalysisData} 
                     lang={lang}
-                    mode={analysisMode}
+                    mode="units"
                   />
               </section>
 
-              {/* Charts Section - Only relevant for Unit Sizes */}
+              {/* Charts Section */}
               <section className="grid grid-cols-1 gap-6">
                 <h3 className="text-lg font-bold text-slate-800">{t.charts.avgUnitSize}</h3>
                 <AnalysisChart data={filteredData} lang={lang} />
