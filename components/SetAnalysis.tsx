@@ -90,7 +90,7 @@ const SetAnalysis: React.FC<SetAnalysisProps> = ({ title, dataSets, lang, mode }
       </div>
 
       {/* Textual Set Operations */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 overflow-y-auto max-h-[350px]">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 overflow-y-auto max-h-[350px] custom-scrollbar pr-2">
         <h3 className="text-lg font-semibold text-slate-800 mb-4">{t.setOperations}</h3>
         
         <div className="space-y-4">

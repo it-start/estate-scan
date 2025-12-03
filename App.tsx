@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { RAW_DATA, PROJECT_SPECS } from './data';
-import { ProjectName, Language } from './types';
+import { ProjectName, Language, ProjectInfo } from './types';
 import { translations, categoryTranslations, translate, facilityTranslations } from './translations';
 import SetAnalysis from './components/SetAnalysis';
 import AnalysisChart from './components/AnalysisChart';
 import UnitTable from './components/UnitTable';
 import MasterPlanComparison from './components/MasterPlanComparison';
-import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Map, Globe } from 'lucide-react';
+import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Map, Globe, Sparkles } from 'lucide-react';
 
 const FacilityGroup = ({ facilities, lang }: { facilities: string[], lang: Language }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -83,6 +83,7 @@ const App = () => {
   
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedSubCategories, setSelectedSubCategories] = useState<Set<string>>(new Set());
+  const [selectedFacilities, setSelectedFacilities] = useState<Set<string>>(new Set());
   const [analysisMode, setAnalysisMode] = useState<'facilities' | 'units' | 'masterplan'>('facilities');
   const [lang, setLang] = useState<Language>('en');
 
@@ -111,9 +112,32 @@ const App = () => {
     return Array.from(new Set(RAW_DATA.map(d => d.subCategory))).sort();
   }, []);
 
+  // Extract all available facilities for the filter
+  const allFacilities = useMemo(() => {
+    return Array.from(new Set(PROJECT_SPECS.flatMap(p => p.facilities))).sort();
+  }, []);
+
+  const filteredSpecs = useMemo(() => {
+    return PROJECT_SPECS.filter(spec => {
+      // 1. Must be in selectedProjects
+      if (!selectedProjects.has(spec.name)) return false;
+      
+      // 2. If in facilities mode, check facility filter
+      if (analysisMode === 'facilities' && selectedFacilities.size > 0) {
+         // AND logic: must have ALL selected facilities
+         const hasAll = Array.from(selectedFacilities).every(f => spec.facilities.includes(f));
+         if (!hasAll) return false;
+      }
+      return true;
+    });
+  }, [selectedProjects, selectedFacilities, analysisMode]);
+
   const filteredData = useMemo(() => {
+    // Get names of valid projects based on all filters applied to specs
+    const validProjectNames = new Set(filteredSpecs.map(p => p.name));
+
     return RAW_DATA.filter(item => {
-      const projectMatch = selectedProjects.has(item.project);
+      const projectMatch = validProjectNames.has(item.project);
       
       // If we are not in 'units' mode, we usually care about the project level data
       // or we want to see ALL units for the project without specific filtering.
@@ -122,6 +146,8 @@ const App = () => {
         return projectMatch;
       }
 
+      if (!projectMatch) return false;
+
       const categoryMatch = selectedCategories.size === 0 || selectedCategories.has(item.category);
       const subCategoryMatch = selectedSubCategories.size === 0 || selectedSubCategories.has(item.subCategory);
       
@@ -129,26 +155,30 @@ const App = () => {
       // Overlap exists if (UnitMin <= FilterMax) and (UnitMax >= FilterMin)
       const sizeMatch = item.minSize <= sizeFilter.currentMax && item.maxSize >= sizeFilter.currentMin;
 
-      return projectMatch && categoryMatch && subCategoryMatch && sizeMatch;
+      return categoryMatch && subCategoryMatch && sizeMatch;
     });
-  }, [selectedProjects, selectedCategories, selectedSubCategories, sizeFilter, analysisMode]);
-
-  const filteredSpecs = useMemo(() => {
-    return PROJECT_SPECS.filter(spec => selectedProjects.has(spec.name));
-  }, [selectedProjects]);
+  }, [filteredSpecs, selectedCategories, selectedSubCategories, sizeFilter, analysisMode]);
 
   // Prepare data for SetAnalysis based on mode
   const setAnalysisData = useMemo(() => {
+    // Helper to get data only if project is currently visible/valid
+    const getProjectData = (name: ProjectName, extractor: (p: ProjectInfo | undefined) => string[]) => {
+      if (!filteredSpecs.find(p => p.name === name)) return [];
+      return extractor(PROJECT_SPECS.find(p => p.name === name));
+    };
+
     if (analysisMode === 'facilities') {
       return {
-        [ProjectName.CORALINA]: PROJECT_SPECS.find(p => p.name === ProjectName.CORALINA)?.facilities || [],
-        [ProjectName.SERENITY]: PROJECT_SPECS.find(p => p.name === ProjectName.SERENITY)?.facilities || [],
-        [ProjectName.SIERRA]: PROJECT_SPECS.find(p => p.name === ProjectName.SIERRA)?.facilities || [],
+        [ProjectName.CORALINA]: getProjectData(ProjectName.CORALINA, p => p?.facilities || []),
+        [ProjectName.SERENITY]: getProjectData(ProjectName.SERENITY, p => p?.facilities || []),
+        [ProjectName.SIERRA]: getProjectData(ProjectName.SIERRA, p => p?.facilities || []),
       };
     } else {
       // Aggregate unit categories from RAW_DATA
-      const getCats = (proj: ProjectName) => 
-        Array.from(new Set(RAW_DATA.filter(d => d.project === proj).map(d => d.category)));
+      const getCats = (proj: ProjectName) => {
+        if (!filteredSpecs.find(p => p.name === proj)) return [];
+        return Array.from(new Set(RAW_DATA.filter(d => d.project === proj).map(d => d.category)));
+      };
 
       return {
         [ProjectName.CORALINA]: getCats(ProjectName.CORALINA),
@@ -156,7 +186,7 @@ const App = () => {
         [ProjectName.SIERRA]: getCats(ProjectName.SIERRA),
       };
     }
-  }, [analysisMode]);
+  }, [analysisMode, filteredSpecs]);
 
   const toggleProject = (proj: ProjectName) => {
     const next = new Set(selectedProjects);
@@ -177,6 +207,13 @@ const App = () => {
     if (next.has(sub)) next.delete(sub);
     else next.add(sub);
     setSelectedSubCategories(next);
+  };
+
+  const toggleFacility = (fac: string) => {
+    const next = new Set(selectedFacilities);
+    if (next.has(fac)) next.delete(fac);
+    else next.add(fac);
+    setSelectedFacilities(next);
   };
 
   const handleSizeChange = (type: 'min' | 'max', value: string) => {
@@ -261,6 +298,36 @@ const App = () => {
               </button>
             </div>
           </div>
+
+          {/* Facilities Filter - Only shown in 'facilities' mode */}
+          {analysisMode === 'facilities' && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="h-px bg-slate-200 my-4" /> 
+              <div>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Sparkles className="w-3 h-3" /> {t.sidebar.facilities}
+                </h3>
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                  {allFacilities.map(fac => (
+                    <label key={fac} className="flex items-center gap-2 cursor-pointer group">
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${selectedFacilities.has(fac) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white group-hover:border-indigo-400'}`}>
+                        {selectedFacilities.has(fac) && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                      </div>
+                      <input 
+                        type="checkbox" 
+                        className="hidden" 
+                        checked={selectedFacilities.has(fac)}
+                        onChange={() => toggleFacility(fac)}
+                      />
+                      <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-700 transition-colors">
+                        {translate(fac, lang, facilityTranslations)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Unit Specific Filters - Only shown in 'units' mode */}
           {analysisMode === 'units' && (
@@ -370,7 +437,7 @@ const App = () => {
           {/* Project Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {filteredSpecs.map(spec => (
-              <div key={spec.name} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+              <div key={spec.name} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 animate-fadeIn">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className={`text-lg font-bold ${spec.name === 'Coralina' ? 'text-rose-600' : spec.name === 'Serenity' ? 'text-emerald-600' : 'text-sky-600'}`}>
                     {spec.name}
