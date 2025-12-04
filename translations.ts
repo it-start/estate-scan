@@ -18,6 +18,12 @@ export const translations = {
       unitCategories: "Unit Categories",
       subCategories: "Sub-Categories",
     },
+    export: {
+      csvTooltip: "Export Units Inventory (CSV)",
+      projectsTooltip: "Export Project Metrics (CSV)",
+      facilitiesTooltip: "Export Facilities Matrix (CSV)",
+      jsonTooltip: "Export Full Data JSON"
+    },
     stats: {
       unitsFound: "Units Found",
       basedOnFilters: "Based on current filters",
@@ -148,6 +154,12 @@ export const translations = {
       unitSize: "Площадь (кв.м)",
       unitCategories: "Категории юнитов",
       subCategories: "Подкатегории",
+    },
+    export: {
+      csvTooltip: "Экспорт реестра юнитов (CSV)",
+      projectsTooltip: "Экспорт метрик проектов (CSV)",
+      facilitiesTooltip: "Экспорт матрицы удобств (CSV)",
+      jsonTooltip: "Экспорт всех данных (JSON)"
     },
     stats: {
       unitsFound: "Найдено юнитов",

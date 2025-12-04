@@ -1,4 +1,5 @@
 
+
 import { useState, useMemo } from 'react';
 import { RAW_DATA, PROJECT_SPECS } from './data';
 import { ProjectName, Language, ProjectInfo } from './types';
@@ -12,7 +13,8 @@ import AudienceAnalysis from './components/AudienceAnalysis';
 import ProjectMap from './components/ProjectMap';
 import FloorPlanViewer from './components/FloorPlanViewer';
 import NavigationTabs from './components/NavigationTabs';
-import FacilitiesMatrix from './components/FacilitiesMatrix'; // Imported
+import FacilitiesMatrix from './components/FacilitiesMatrix';
+import ExportControl from './components/ExportControl'; // Imported
 import { Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Sparkles, Globe } from 'lucide-react';
 import { useFilters } from './contexts/FilterContext';
 
@@ -296,8 +298,14 @@ const App = () => {
           )}
         </div>
         
-        {/* Sidebar Footer Stats */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200">
+        {/* Sidebar Footer Stats & Export */}
+        <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-3">
+           {/* Export Controls */}
+           <div className="flex justify-between items-center border-b border-slate-200 pb-2 mb-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Actions</span>
+              <ExportControl units={filteredData} projects={filteredSpecs} lang={lang} />
+           </div>
+
            <div className="flex justify-between items-center text-xs text-slate-500">
               <span>{filteredData.length} {t.stats.unitsFound}</span>
               <span className="bg-slate-200 px-2 py-0.5 rounded-full">{filteredSpecs.length} {t.stats.buildings}</span>
