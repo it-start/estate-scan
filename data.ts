@@ -1,5 +1,3 @@
-
-
 import { UnitPlan, ProjectName, ProjectInfo, ProjectFloorPlan } from './types';
 
 // Normalized Facility Tags for Analysis

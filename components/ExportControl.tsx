@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import { FileDown, FileJson, FileSpreadsheet, Building, Sparkles } from 'lucide-react';
+import { FileJson, FileSpreadsheet, Building, Sparkles } from 'lucide-react';
 import { UnitPlan, ProjectInfo, Language } from '../types';
 import { translations } from '../translations';
 
