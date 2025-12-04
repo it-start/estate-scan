@@ -1,8 +1,10 @@
+
+
 import React, { createContext, useContext, useState, useMemo, ReactNode } from 'react';
 import { ProjectName, Language, ProjectInfo, UnitPlan } from '../types';
 import { RAW_DATA, PROJECT_SPECS } from '../data';
 
-export type AnalysisMode = 'facilities' | 'units' | 'masterplan' | 'audience';
+export type AnalysisMode = 'facilities' | 'units' | 'masterplan' | 'audience' | 'floorplans';
 
 export interface SizeFilter {
   globalMin: number;

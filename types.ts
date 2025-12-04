@@ -1,4 +1,5 @@
 
+
 export type Language = 'en' | 'ru';
 
 export interface LocalizedString {
@@ -64,4 +65,33 @@ export interface SetAnalysisResult {
   uniqueToCoralina: string[];
   uniqueToSerenity: string[];
   uniqueToSierra: string[];
+}
+
+// --- Floor Plan Types ---
+
+export interface UnitRange {
+  prefix: string; // e.g., "A2"
+  start: number; // e.g., 1
+  end: number; // e.g., 26
+  description?: string; // e.g., "Standard Mix"
+}
+
+export interface FloorNode {
+  level: number | string; // 1, 2, "Roof"
+  label: string; // "1st Floor"
+  unitCount: number;
+  unitRanges: UnitRange[]; // To simulate unit presence on floor
+  imageUrl?: string; // Placeholder for actual image path
+  notes?: LocalizedString; // Architectural notes derived from OCR
+}
+
+export interface BuildingNode {
+  id: string;
+  name: string; // "Building A"
+  floors: FloorNode[];
+}
+
+export interface ProjectFloorPlan {
+  project: ProjectName;
+  buildings: BuildingNode[];
 }

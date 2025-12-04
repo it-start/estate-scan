@@ -1,4 +1,5 @@
 
+
 import { useState, useMemo } from 'react';
 import { RAW_DATA, PROJECT_SPECS } from './data';
 import { ProjectName, Language, ProjectInfo } from './types';
@@ -10,7 +11,8 @@ import MasterPlanComparison from './components/MasterPlanComparison';
 import SizeDistributionChart from './components/SizeDistributionChart';
 import AudienceAnalysis from './components/AudienceAnalysis';
 import ProjectMap from './components/ProjectMap';
-import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Map, Globe, Sparkles, Users } from 'lucide-react';
+import FloorPlanViewer from './components/FloorPlanViewer';
+import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Map, Globe, Sparkles, Users, FileText } from 'lucide-react';
 import { useFilters } from './contexts/FilterContext';
 
 const FacilityGroup = ({ facilities, lang }: { facilities: string[], lang: Language }) => {
@@ -203,6 +205,12 @@ const App = () => {
               >
                 <Map className="w-3 h-3" /> {t.sidebar.masterPlan}
               </button>
+              <button 
+                onClick={() => setAnalysisMode('floorplans')}
+                className={`w-full flex items-center justify-center gap-1 text-xs py-1.5 rounded-md font-medium transition-all ${analysisMode === 'floorplans' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                <FileText className="w-3 h-3" /> {t.sidebar.floorPlans}
+              </button>
             </div>
           </div>
 
@@ -341,50 +349,54 @@ const App = () => {
              </div>
           </div>
 
-          {/* Project Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredSpecs.map(spec => (
-              <div key={spec.name} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 animate-fadeIn">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className={`text-lg font-bold ${spec.name === 'Coralina' ? 'text-rose-600' : spec.name === 'Serenity' ? 'text-emerald-600' : 'text-sky-600'}`}>
-                    {spec.name}
-                  </h3>
-                  <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full font-mono">
-                    {spec.totalUnits} {t.stats.units}
-                  </span>
-                </div>
-                
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-3 text-slate-600">
-                    <MapPin className="w-4 h-4 shrink-0" />
-                    <span className="truncate">{spec.location[lang]}</span>
+          {/* Project Summary Cards - Hide in Floor Plan Mode to save space */}
+          {analysisMode !== 'floorplans' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {filteredSpecs.map(spec => (
+                <div key={spec.name} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 animate-fadeIn">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className={`text-lg font-bold ${spec.name === 'Coralina' ? 'text-rose-600' : spec.name === 'Serenity' ? 'text-emerald-600' : 'text-sky-600'}`}>
+                      {spec.name}
+                    </h3>
+                    <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full font-mono">
+                      {spec.totalUnits} {t.stats.units}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-3 text-slate-600">
-                    <Ruler className="w-4 h-4 shrink-0" />
-                    <span>{spec.landAreaRai} {t.stats.rai} ({spec.landAreaSqm.toLocaleString()} sqm)</span>
+                  
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <MapPin className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{spec.location[lang]}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <Ruler className="w-4 h-4 shrink-0" />
+                      <span>{spec.landAreaRai} {t.stats.rai} ({spec.landAreaSqm.toLocaleString()} sqm)</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <Home className="w-4 h-4 shrink-0" />
+                      <span>{spec.buildings} {t.stats.buildings}, {spec.storeys} {t.stats.storeys}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <Layers className="w-4 h-4 shrink-0" />
+                      <span>{spec.masterPlan.facilityDensity} {t.stats.facilityDensity}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-slate-600">
-                    <Home className="w-4 h-4 shrink-0" />
-                    <span>{spec.buildings} {t.stats.buildings}, {spec.storeys} {t.stats.storeys}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-slate-600">
-                    <Layers className="w-4 h-4 shrink-0" />
-                    <span>{spec.masterPlan.facilityDensity} {t.stats.facilityDensity}</span>
-                  </div>
-                </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <p className="text-xs font-semibold text-slate-500 uppercase mb-2">{t.stats.keyFacilities}</p>
-                  <FacilityGroup facilities={spec.facilities} lang={lang} />
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <p className="text-xs font-semibold text-slate-500 uppercase mb-2">{t.stats.keyFacilities}</p>
+                    <FacilityGroup facilities={spec.facilities} lang={lang} />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
-          {/* Map Section */}
-          <section className="animate-fadeIn">
-            <ProjectMap projects={filteredSpecs} lang={lang} />
-          </section>
+          {/* Map Section - Hide in Floor Plan Mode */}
+          {analysisMode !== 'floorplans' && (
+            <section className="animate-fadeIn">
+              <ProjectMap projects={filteredSpecs} lang={lang} />
+            </section>
+          )}
 
           {/* Conditional Analysis Content */}
 
@@ -398,6 +410,26 @@ const App = () => {
                 <h3 className="text-lg font-bold text-slate-800">{t.sidebar.masterPlan}</h3>
               </div>
               <MasterPlanComparison projects={filteredSpecs} lang={lang} />
+            </section>
+          )}
+
+          {analysisMode === 'floorplans' && (
+            <section className="animate-fadeIn">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-slate-800">{t.floorPlan.title}</h3>
+                <p className="text-sm text-slate-500">{t.floorPlan.subtitle}</p>
+              </div>
+              {/* Only pass the first selected project if multiple selected, or specific one */}
+              <FloorPlanViewer 
+                activeProject={filteredSpecs.length > 0 ? filteredSpecs[0].name : ProjectName.SIERRA} 
+                lang={lang} 
+              />
+              {filteredSpecs.length > 1 && (
+                <div className="mt-4 p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg border border-yellow-200 flex items-center gap-2">
+                   <AlertCircle className="w-4 h-4" />
+                   Since multiple projects are selected, showing data for <strong>{filteredSpecs[0].name}</strong>. Deselect others in sidebar to switch.
+                </div>
+              )}
             </section>
           )}
 
@@ -451,5 +483,10 @@ const App = () => {
     </div>
   );
 };
+
+// Simple Alert Icon for inline usage
+const AlertCircle = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+);
 
 export default App;

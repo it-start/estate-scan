@@ -1,5 +1,6 @@
 
-import { UnitPlan, ProjectName, ProjectInfo } from './types';
+
+import { UnitPlan, ProjectName, ProjectInfo, ProjectFloorPlan } from './types';
 
 // Normalized Facility Tags for Analysis
 const FACILITIES = {
@@ -240,4 +241,135 @@ export const RAW_DATA: UnitPlan[] = [
   { id: 'si-7', project: ProjectName.SIERRA, name: '1 Bedroom Plus C', code: '1 Bedroom Plus C', category: '1 Bedroom Plus', subCategory: 'C', minSize: 46.54, maxSize: 46.54 },
   { id: 'si-8', project: ProjectName.SIERRA, name: '2 Bedroom S', code: '2 Bedroom S', category: '2 Bedroom', subCategory: 'S', minSize: 55.65, maxSize: 55.65 },
   { id: 'si-9', project: ProjectName.SIERRA, name: '2 Bedroom M', code: '2 Bedroom M', category: '2 Bedroom', subCategory: 'M', minSize: 58.07, maxSize: 58.07 },
+];
+
+export const FLOOR_PLAN_DATA: ProjectFloorPlan[] = [
+  {
+    project: ProjectName.SIERRA,
+    buildings: [
+      {
+        id: 'sierra-a',
+        name: 'Building A',
+        floors: [
+          {
+            level: 2,
+            label: '2nd Floor',
+            unitCount: 26,
+            unitRanges: [{ prefix: 'A2', start: 1, end: 26 }],
+            notes: { en: 'L-shaped single loaded corridor', ru: 'L-образный коридор с односторонней загрузкой' }
+          },
+          {
+            level: 3,
+            label: '3rd Floor',
+            unitCount: 26,
+            unitRanges: [{ prefix: 'A3', start: 1, end: 26 }]
+          },
+          {
+             level: 4,
+             label: '4th Floor',
+             unitCount: 26,
+             unitRanges: [{ prefix: 'A4', start: 1, end: 26 }]
+          },
+          {
+             level: 5,
+             label: '5th Floor',
+             unitCount: 26,
+             unitRanges: [{ prefix: 'A5', start: 1, end: 26 }]
+          },
+          {
+             level: 6,
+             label: '6th Floor',
+             unitCount: 26,
+             unitRanges: [{ prefix: 'A6', start: 1, end: 26 }]
+          },
+          {
+             level: 7,
+             label: '7th Floor',
+             unitCount: 26,
+             unitRanges: [{ prefix: 'A7', start: 1, end: 26 }]
+          },
+          {
+             level: 8,
+             label: '8th Floor',
+             unitCount: 26,
+             unitRanges: [{ prefix: 'A8', start: 1, end: 26 }]
+          }
+        ]
+      },
+      {
+         id: 'sierra-c',
+         name: 'Building C',
+         floors: [
+            { level: 2, label: '2nd Floor', unitCount: 19, unitRanges: [{ prefix: 'C2', start: 1, end: 19 }] },
+            { level: 3, label: '3rd Floor', unitCount: 19, unitRanges: [{ prefix: 'C3', start: 1, end: 19 }] },
+            { level: 4, label: '4th Floor', unitCount: 19, unitRanges: [{ prefix: 'C4', start: 1, end: 19 }] },
+            { level: 5, label: '5th Floor', unitCount: 19, unitRanges: [{ prefix: 'C5', start: 1, end: 19 }] },
+            { level: 6, label: '6th Floor', unitCount: 19, unitRanges: [{ prefix: 'C6', start: 1, end: 19 }] },
+            { level: 7, label: '7th Floor', unitCount: 19, unitRanges: [{ prefix: 'C7', start: 1, end: 19 }] },
+            { level: 8, label: '8th Floor', unitCount: 13, unitRanges: [{ prefix: 'C8', start: 1, end: 13 }] }
+         ]
+      }
+    ]
+  },
+  {
+   project: ProjectName.CORALINA,
+   buildings: [
+      {
+         id: 'coralina-a',
+         name: 'Building A',
+         floors: [
+            { level: 1, label: '1st Floor', unitCount: 5, unitRanges: [{ prefix: 'SH', start: 1, end: 5, description: 'Shop/Garden Units' }] },
+            { level: 2, label: '2nd Floor', unitCount: 6, unitRanges: [{ prefix: 'A2', start: 1, end: 6 }] },
+            { level: 3, label: '3rd Floor', unitCount: 10, unitRanges: [{ prefix: 'A3', start: 1, end: 10 }] },
+            { level: 4, label: '4th Floor', unitCount: 10, unitRanges: [{ prefix: 'A4', start: 1, end: 10 }] },
+            { level: 5, label: '5th Floor', unitCount: 10, unitRanges: [{ prefix: 'A5', start: 1, end: 10 }] },
+            { level: 6, label: '6th Floor', unitCount: 10, unitRanges: [{ prefix: 'A6', start: 1, end: 10 }] },
+            { level: 7, label: '7th Floor', unitCount: 10, unitRanges: [{ prefix: 'A7', start: 1, end: 10 }] },
+            { level: 'Roof', label: 'Roof Floor', unitCount: 0, unitRanges: [], notes: { en: 'Roof Garden & Utilities', ru: 'Сад на крыше и коммуникации' } }
+         ]
+      },
+      {
+         id: 'coralina-b',
+         name: 'Building B',
+         floors: [
+            { level: 1, label: '1st Floor', unitCount: 8, unitRanges: [{ prefix: 'B1', start: 1, end: 8 }] },
+            { level: 2, label: '2nd Floor', unitCount: 8, unitRanges: [{ prefix: 'B2', start: 1, end: 8 }] },
+            { level: 3, label: '3rd Floor', unitCount: 8, unitRanges: [{ prefix: 'B3', start: 1, end: 8 }] },
+            { level: 4, label: '4th Floor', unitCount: 8, unitRanges: [{ prefix: 'B4', start: 1, end: 8 }] },
+            { level: 5, label: '5th Floor', unitCount: 8, unitRanges: [{ prefix: 'B5', start: 1, end: 8 }] },
+            { level: 6, label: '6th Floor', unitCount: 8, unitRanges: [{ prefix: 'B6', start: 1, end: 8 }] },
+            { level: 7, label: '7th Floor', unitCount: 6, unitRanges: [{ prefix: 'B7', start: 1, end: 6 }] },
+            { level: 'Roof', label: 'Roof Floor', unitCount: 2, unitRanges: [{ prefix: 'B7', start: 3, end: 4, description: 'Upper Duplex Part' }] }
+         ]
+      },
+      {
+         id: 'coralina-c',
+         name: 'Building C',
+         floors: [
+            { level: 1, label: '1st Floor', unitCount: 10, unitRanges: [{ prefix: 'C1', start: 1, end: 10 }] },
+            { level: 2, label: '2nd Floor', unitCount: 10, unitRanges: [{ prefix: 'C2', start: 1, end: 10 }] },
+            { level: 3, label: '3rd Floor', unitCount: 10, unitRanges: [{ prefix: 'C3', start: 1, end: 10 }] },
+            { level: 4, label: '4th Floor', unitCount: 10, unitRanges: [{ prefix: 'C4', start: 1, end: 10 }] },
+            { level: 5, label: '5th Floor', unitCount: 10, unitRanges: [{ prefix: 'C5', start: 1, end: 10 }] },
+            { level: 6, label: '6th Floor', unitCount: 10, unitRanges: [{ prefix: 'C6', start: 1, end: 10 }] },
+            { level: 7, label: '7th Floor', unitCount: 5, unitRanges: [{ prefix: 'C7', start: 1, end: 5 }] },
+            { level: 'Roof', label: 'Roof Floor', unitCount: 3, unitRanges: [{ prefix: 'C7', start: 1, end: 3, description: 'Upper Penthouse Part' }] }
+         ]
+      },
+      {
+         id: 'coralina-d',
+         name: 'Building D',
+         floors: [
+            { level: 1, label: '1st Floor', unitCount: 10, unitRanges: [{ prefix: 'D1', start: 1, end: 10 }] },
+            { level: 2, label: '2nd Floor', unitCount: 10, unitRanges: [{ prefix: 'D2', start: 1, end: 10 }] },
+            { level: 3, label: '3rd Floor', unitCount: 10, unitRanges: [{ prefix: 'D3', start: 1, end: 10 }] },
+            { level: 4, label: '4th Floor', unitCount: 10, unitRanges: [{ prefix: 'D4', start: 1, end: 10 }] },
+            { level: 5, label: '5th Floor', unitCount: 10, unitRanges: [{ prefix: 'D5', start: 1, end: 10 }] },
+            { level: 6, label: '6th Floor', unitCount: 10, unitRanges: [{ prefix: 'D6', start: 1, end: 10 }] },
+            { level: 7, label: '7th Floor', unitCount: 7, unitRanges: [{ prefix: 'D7', start: 1, end: 7 }] },
+            { level: 'Roof', label: 'Roof Floor', unitCount: 3, unitRanges: [{ prefix: 'D7', start: 2, end: 7, description: 'Upper Penthouse Part' }] }
+         ]
+      }
+   ]
+  }
 ];

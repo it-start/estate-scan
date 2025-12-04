@@ -1,4 +1,5 @@
 
+
 import { Language } from './types';
 
 export const translations = {
@@ -11,7 +12,8 @@ export const translations = {
       facilities: "Facilities",
       unitTypes: "Unit Types",
       masterPlan: "Master Plan",
-      audience: "Audience Fit", // New
+      audience: "Audience Fit",
+      floorPlans: "Floor Plans", // New
       unitSize: "Unit Size (SQ.M)",
       unitCategories: "Unit Categories",
       subCategories: "Sub-Categories",
@@ -32,6 +34,18 @@ export const translations = {
     map: {
         title: "Project Locations",
         subtitle: "Geographic distribution across Phuket (Kamala, Naiyang, Bang-Tao)."
+    },
+    floorPlan: {
+      title: "Floor Plan Navigator",
+      subtitle: "Architectural layout analysis and unit distribution.",
+      selectBuilding: "Select Building",
+      selectFloor: "Select Floor",
+      floorComposition: "Floor Composition",
+      totalUnitsOnFloor: "Units on this floor",
+      architecturalNotes: "Architectural Analysis",
+      unitRange: "Unit Range",
+      noData: "No floor plan data available for this selection.",
+      zoomTip: "Scroll to zoom • Drag to pan"
     },
     masterPlan: {
       densityTradeOff: "Density Trade-off",
@@ -129,7 +143,8 @@ export const translations = {
       facilities: "Удобства",
       unitTypes: "Типы юнитов",
       masterPlan: "Генплан",
-      audience: "Целевая аудитория", // New
+      audience: "Целевая аудитория",
+      floorPlans: "Планировки этажей", // New
       unitSize: "Площадь (кв.м)",
       unitCategories: "Категории юнитов",
       subCategories: "Подкатегории",
@@ -150,6 +165,18 @@ export const translations = {
     map: {
         title: "Локации проектов",
         subtitle: "Географическое распределение по Пхукету (Камала, Найянг, Банг-Тао)."
+    },
+    floorPlan: {
+      title: "Навигатор планировок",
+      subtitle: "Анализ архитектурной планировки и распределения юнитов.",
+      selectBuilding: "Выберите корпус",
+      selectFloor: "Выберите этаж",
+      floorComposition: "Состав этажа",
+      totalUnitsOnFloor: "Юнитов на этаже",
+      architecturalNotes: "Архитектурный анализ",
+      unitRange: "Диапазон номеров",
+      noData: "Нет данных планировки для выбранных параметров.",
+      zoomTip: "Скролл для зума • Тяните для перемещения"
     },
     masterPlan: {
       densityTradeOff: "Плотность застройки",
