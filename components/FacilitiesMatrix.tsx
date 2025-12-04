@@ -2,7 +2,7 @@
 import React from 'react';
 import { ProjectInfo, ProjectName, Language } from '../types';
 import { translations, facilityTranslations, translate } from '../translations';
-import { Check, Minus, Sparkles, Coffee, Dumbbell, Gamepad2, ShieldCheck, Waves } from 'lucide-react';
+import { Check, Minus, Sparkles, Coffee, Dumbbell, Gamepad2, ShieldCheck } from 'lucide-react';
 
 interface FacilitiesMatrixProps {
   projects: ProjectInfo[];
@@ -29,8 +29,6 @@ const CATEGORIES = {
 };
 
 const FacilitiesMatrix: React.FC<FacilitiesMatrixProps> = ({ projects, lang }) => {
-  const t = translations[lang];
-
   // Helper to check if project has facility
   const hasFacility = (project: ProjectInfo, facility: string) => 
     project.facilities.includes(facility);
