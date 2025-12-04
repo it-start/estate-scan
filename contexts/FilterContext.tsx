@@ -34,6 +34,10 @@ interface FilterContextType {
   
   sizeFilter: SizeFilter;
   handleSizeChange: (type: 'min' | 'max', value: string) => void;
+
+  // New State for Interactivity
+  highlightedCategory: string | null;
+  setHighlightedCategory: (cat: string | null) => void;
   
   // Derived Data
   allCategories: string[];
@@ -58,6 +62,7 @@ export const FilterProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedSubCategories, setSelectedSubCategories] = useState<Set<string>>(new Set());
   const [selectedFacilities, setSelectedFacilities] = useState<Set<string>>(new Set());
+  const [highlightedCategory, setHighlightedCategory] = useState<string | null>(null);
 
   const [sizeFilter, setSizeFilter] = useState<SizeFilter>(() => {
     const sizes = RAW_DATA.flatMap(d => [d.minSize, d.maxSize]);
@@ -174,6 +179,7 @@ export const FilterProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     selectedSubCategories, toggleSubCategory,
     selectedFacilities, toggleFacility,
     sizeFilter, handleSizeChange,
+    highlightedCategory, setHighlightedCategory,
     allCategories, allSubCategories, allFacilities,
     filteredSpecs, filteredData
   };

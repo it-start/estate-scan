@@ -4,15 +4,112 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ProjectName, Language, FloorNode, BuildingNode } from '../types';
 import { FLOOR_PLAN_DATA } from '../data';
 import { translations } from '../translations';
-import { Map, ZoomIn, ZoomOut, Maximize, AlertCircle } from 'lucide-react';
+import { useFilters } from '../contexts/FilterContext';
+import { Map, ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid } from 'lucide-react';
 
 interface FloorPlanViewerProps {
   activeProject: ProjectName;
   lang: Language;
 }
 
+const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, highlight: string | null, setHighlight: (c: string | null) => void }) => {
+  // Algorithmic Layout Generator
+  // Assume a corridor layout: units split top/bottom
+  const unitList = useMemo(() => {
+    const units = [];
+    if (floor.unitRanges) {
+      floor.unitRanges.forEach(range => {
+        for (let i = range.start; i <= range.end; i++) {
+          const id = `${range.prefix}${i.toString().padStart(range.prefix.length > 2 ? 2 : 3, '0')}`; // simple pad
+          // Try to fix padding logic to match data (A201 vs A21)
+          const numStr = i.toString().padStart(2, '0');
+          const fullId = `${range.prefix}${numStr.length < 2 ? '0'+numStr : numStr}`; // Heuristic, better below
+          
+          // Better logic: standard usually is Prefix + number. 
+          // If prefix is 'A2', start is 1 -> 'A201' usually.
+          let realId = `${range.prefix}${i.toString().padStart(2, '0')}`;
+          // Correct specific Sierra logic if needed: A2 + 01 = A201
+          if (range.prefix.length === 2 && !isNaN(Number(range.prefix[1]))) {
+             // e.g. A2 -> A201
+             realId = `${range.prefix}${i.toString().padStart(2, '0')}`;
+          }
+
+          const mapped = floor.unitMap?.[realId];
+          units.push({
+            id: realId,
+            type: mapped?.type || 'Unknown',
+            size: mapped?.size || 0,
+            hasData: !!mapped
+          });
+        }
+      });
+    }
+    return units;
+  }, [floor]);
+
+  const midPoint = Math.ceil(unitList.length / 2);
+  const topRow = unitList.slice(0, midPoint);
+  const bottomRow = unitList.slice(midPoint);
+
+  // Unit Box Component
+  const UnitBox = ({ unit }: { unit: any }) => {
+    const isHighlighted = highlight === unit.type;
+    // Color coding based on type if available, else generic
+    const getColor = () => {
+       if (!unit.hasData) return 'bg-slate-100 border-slate-300 text-slate-400';
+       if (unit.type.includes('1 Bedroom')) return 'bg-blue-100 border-blue-300 text-blue-700';
+       if (unit.type.includes('2 Bedroom')) return 'bg-emerald-100 border-emerald-300 text-emerald-700';
+       if (unit.type.includes('3 Bedroom')) return 'bg-amber-100 border-amber-300 text-amber-700';
+       return 'bg-slate-200 border-slate-400 text-slate-600';
+    };
+
+    return (
+      <div 
+        className={`
+          relative flex flex-col items-center justify-center p-2 border rounded shadow-sm transition-all duration-200 cursor-pointer
+          ${getColor()}
+          ${isHighlighted ? 'ring-4 ring-indigo-400 scale-105 z-10 shadow-lg' : 'hover:scale-105 hover:shadow-md hover:z-10'}
+          min-w-[60px] h-[80px]
+        `}
+        onMouseEnter={() => setHighlight(unit.type)}
+        onMouseLeave={() => setHighlight(null)}
+      >
+        <span className="font-mono text-xs font-bold">{unit.id}</span>
+        {unit.hasData && (
+          <span className="text-[10px] opacity-75">{unit.size.toFixed(0)}m²</span>
+        )}
+        
+        {/* Tooltip */}
+        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 text-white text-xs p-2 rounded z-20 whitespace-nowrap">
+           {unit.type}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+     <div className="flex flex-col gap-8 p-12 bg-white/50 backdrop-blur-sm rounded-xl border border-slate-200 shadow-xl min-w-max">
+        {/* Top Row */}
+        <div className="flex gap-1">
+           {topRow.map(u => <UnitBox key={u.id} unit={u} />)}
+        </div>
+        
+        {/* Corridor */}
+        <div className="h-12 bg-slate-100/50 border-y-2 border-dashed border-slate-300 flex items-center justify-center text-slate-300 font-bold tracking-[1em] uppercase select-none">
+           Corridor
+        </div>
+
+        {/* Bottom Row - Reversed to simulate facing doors if desired, or standard order */}
+        <div className="flex gap-1">
+           {bottomRow.map(u => <UnitBox key={u.id} unit={u} />)}
+        </div>
+     </div>
+  );
+};
+
 const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }) => {
   const t = translations[lang].floorPlan;
+  const { highlightedCategory, setHighlightedCategory } = useFilters();
   
   // State
   const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
@@ -42,8 +139,8 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
   const selectedFloor = selectedBuilding?.floors.find(f => f.level === selectedFloorLevel);
 
   // Zoom Handlers
-  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.5, 4));
-  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.5, 1));
+  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.25, 3));
+  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.25, 0.5));
   const handleResetZoom = () => {
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
@@ -51,10 +148,8 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
 
   // Pan Handlers
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (zoomLevel > 1) {
-      setIsPanning(true);
-      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-    }
+    setIsPanning(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -86,7 +181,7 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
         {/* Building & Floor Selection */}
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
           <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4 flex items-center gap-2">
-            <Map className="w-4 h-4" /> Controls
+            <LayoutGrid className="w-4 h-4" /> Controls
           </h3>
           
           <div className="space-y-4">
@@ -170,62 +265,53 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
       </div>
 
       {/* Main Visualizer */}
-      <div className="flex-1 bg-slate-900 rounded-xl overflow-hidden relative shadow-inner group">
+      <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden relative shadow-inner group border border-slate-200">
         
-        {/* Placeholder / Simulator for Image */}
+        {/* Infinite Canvas */}
         <div 
-          className={`w-full h-full flex items-center justify-center transition-transform duration-200 ease-out ${isPanning ? 'cursor-grabbing' : zoomLevel > 1 ? 'cursor-grab' : 'cursor-default'}`}
+          className={`w-full h-full flex items-center justify-center transition-transform duration-75 ease-out ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
           style={{ 
-            transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
+            transform: `translate(${position.x}px, ${position.y}px) scale(${zoomLevel})`,
+            transformOrigin: 'center center'
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-           {/* Since we don't have the actual image URLs in this code env, we construct a schematic visual representation */}
-           <div className="relative w-[80%] h-[80%] bg-slate-800 border border-slate-700 rounded-lg shadow-2xl flex items-center justify-center">
-              <div className="absolute top-4 left-4 text-slate-500 font-mono text-xs opacity-50">FLOOR PLAN SCHEMATIC</div>
-              
-              {/* Simulated Building Shape */}
-              <div className="w-[70%] h-[40%] border-2 border-slate-600 rounded flex items-center justify-center relative">
-                 <div className="text-slate-500 font-bold opacity-20 text-4xl select-none">
-                    {selectedBuilding?.name}
-                 </div>
-                 <div className="absolute -bottom-6 text-slate-400 text-sm font-mono">{selectedFloor?.label}</div>
-                 
-                 {/* Simulated Units */}
-                 <div className="absolute top-0 left-0 w-full h-full grid grid-cols-8 gap-0.5 opacity-30">
-                    {Array.from({ length: 16 }).map((_, i) => (
-                      <div key={i} className="bg-indigo-500/20 border border-indigo-500/30"></div>
-                    ))}
-                 </div>
-              </div>
-           </div>
+           {selectedFloor ? (
+              <FloorSchematic 
+                floor={selectedFloor} 
+                highlight={highlightedCategory} 
+                setHighlight={setHighlightedCategory} 
+              />
+           ) : (
+              <div className="text-slate-400 font-mono">Select a floor to view</div>
+           )}
         </div>
 
         {/* Overlay Controls */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white/10 backdrop-blur-md p-2 rounded-lg border border-white/20">
-          <button onClick={handleZoomIn} className="p-2 text-white hover:bg-white/20 rounded-md transition-colors" title="Zoom In">
+        <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white shadow-md p-2 rounded-lg border border-slate-100">
+          <button onClick={handleZoomIn} className="p-2 text-slate-600 hover:bg-slate-50 rounded-md transition-colors" title="Zoom In">
             <ZoomIn className="w-5 h-5" />
           </button>
-          <button onClick={handleResetZoom} className="p-2 text-white hover:bg-white/20 rounded-md transition-colors" title="Reset">
+          <button onClick={handleResetZoom} className="p-2 text-slate-600 hover:bg-slate-50 rounded-md transition-colors" title="Reset">
             <Maximize className="w-5 h-5" />
           </button>
-          <button onClick={handleZoomOut} className="p-2 text-white hover:bg-white/20 rounded-md transition-colors" title="Zoom Out">
+          <button onClick={handleZoomOut} className="p-2 text-slate-600 hover:bg-slate-50 rounded-md transition-colors" title="Zoom Out">
             <ZoomOut className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-xs pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-slate-600 text-xs shadow border border-slate-200 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
            {t.zoomTip}
         </div>
 
-        <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10">
-          <h2 className="text-white font-bold text-sm tracking-wide">
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+          <h2 className="text-slate-800 font-bold text-sm tracking-wide">
             {activeProject}
           </h2>
-          <div className="text-indigo-300 text-xs">
+          <div className="text-indigo-600 text-xs font-medium">
             {selectedBuilding?.name} • {selectedFloor?.label}
           </div>
         </div>

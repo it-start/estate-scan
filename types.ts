@@ -76,11 +76,21 @@ export interface UnitRange {
   description?: string; // e.g., "Standard Mix"
 }
 
+// Map specific unit numbers (e.g. "A201") to UnitPlan IDs or Categories
+export interface UnitTypeMapping {
+  [unitNumber: string]: {
+    type: string; // e.g., "1 Bedroom S"
+    size: number;
+    color?: string;
+  }
+}
+
 export interface FloorNode {
   level: number | string; // 1, 2, "Roof"
   label: string; // "1st Floor"
   unitCount: number;
   unitRanges: UnitRange[]; // To simulate unit presence on floor
+  unitMap?: UnitTypeMapping; // Specific mapping for visualization
   imageUrl?: string; // Placeholder for actual image path
   notes?: LocalizedString; // Architectural notes derived from OCR
 }
