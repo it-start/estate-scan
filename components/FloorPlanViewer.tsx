@@ -1,30 +1,30 @@
-
-
 import React, { useState, useMemo, useEffect } from 'react';
-import { ProjectName, Language, FloorNode, BuildingNode } from '../types';
+import { ProjectName, Language, FloorNode } from '../types';
 import { FLOOR_PLAN_DATA } from '../data';
 import { translations } from '../translations';
 import { useFilters } from '../contexts/FilterContext';
-import { Map, ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid } from 'lucide-react';
 
 interface FloorPlanViewerProps {
   activeProject: ProjectName;
   lang: Language;
 }
 
+interface UnitDisplayData {
+  id: string;
+  type: string;
+  size: number;
+  hasData: boolean;
+}
+
 const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, highlight: string | null, setHighlight: (c: string | null) => void }) => {
   // Algorithmic Layout Generator
   // Assume a corridor layout: units split top/bottom
   const unitList = useMemo(() => {
-    const units = [];
+    const units: UnitDisplayData[] = [];
     if (floor.unitRanges) {
       floor.unitRanges.forEach(range => {
         for (let i = range.start; i <= range.end; i++) {
-          const id = `${range.prefix}${i.toString().padStart(range.prefix.length > 2 ? 2 : 3, '0')}`; // simple pad
-          // Try to fix padding logic to match data (A201 vs A21)
-          const numStr = i.toString().padStart(2, '0');
-          const fullId = `${range.prefix}${numStr.length < 2 ? '0'+numStr : numStr}`; // Heuristic, better below
-          
           // Better logic: standard usually is Prefix + number. 
           // If prefix is 'A2', start is 1 -> 'A201' usually.
           let realId = `${range.prefix}${i.toString().padStart(2, '0')}`;
@@ -52,7 +52,7 @@ const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, 
   const bottomRow = unitList.slice(midPoint);
 
   // Unit Box Component
-  const UnitBox = ({ unit }: { unit: any }) => {
+  const UnitBox = ({ unit }: { unit: UnitDisplayData }) => {
     const isHighlighted = highlight === unit.type;
     // Color coding based on type if available, else generic
     const getColor = () => {
