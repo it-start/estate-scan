@@ -4,7 +4,7 @@ import { ProjectName, Language, FloorNode, BuildingNode } from '../types';
 import { FLOOR_PLAN_DATA } from '../data';
 import { translations } from '../translations';
 import { useFilters } from '../contexts/FilterContext';
-import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid, Image as ImageIcon, ChevronDown, Map as MapIcon, ArrowLeft, Waves, Trees, ArrowRight, ArrowLeft as ArrowLeftIcon } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid, ChevronDown, Map as MapIcon, ArrowLeft, Waves, Trees, ArrowRight, ArrowLeft as ArrowLeftIcon } from 'lucide-react';
 
 interface FloorPlanViewerProps {
   activeProject: ProjectName;
