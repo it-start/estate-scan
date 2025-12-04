@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ProjectInfo, ProjectName, Language } from '../types';
-import { translations, facilityTranslations, translate } from '../translations';
+import { facilityTranslations, translate } from '../translations';
 import { Check, Minus, Sparkles, Coffee, Dumbbell, Gamepad2, ShieldCheck } from 'lucide-react';
 
 interface FacilitiesMatrixProps {
