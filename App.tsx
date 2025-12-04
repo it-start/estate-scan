@@ -11,7 +11,8 @@ import SizeDistributionChart from './components/SizeDistributionChart';
 import AudienceAnalysis from './components/AudienceAnalysis';
 import ProjectMap from './components/ProjectMap';
 import FloorPlanViewer from './components/FloorPlanViewer';
-import NavigationTabs from './components/NavigationTabs'; // Import new component
+import NavigationTabs from './components/NavigationTabs';
+import FacilitiesMatrix from './components/FacilitiesMatrix'; // Imported
 import { Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Sparkles, Globe } from 'lucide-react';
 import { useFilters } from './contexts/FilterContext';
 
@@ -393,16 +394,22 @@ const App = () => {
             )}
 
             {analysisMode === 'facilities' && (
-              <section className="animate-fadeIn">
-                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-slate-800">{t.setAnalysis.amenitiesTitle}</h3>
+              <section className="animate-fadeIn space-y-8">
+                 {/* Set Analysis */}
+                 <div>
+                    <div className="flex items-center justify-between mb-4">
+                       <h3 className="text-lg font-bold text-slate-800">{t.setAnalysis.amenitiesTitle}</h3>
+                    </div>
+                    <SetAnalysis 
+                        title={t.setAnalysis.amenitiesTitle}
+                        dataSets={setAnalysisData} 
+                        lang={lang}
+                        mode="facilities"
+                      />
                  </div>
-                 <SetAnalysis 
-                    title={t.setAnalysis.amenitiesTitle}
-                    dataSets={setAnalysisData} 
-                    lang={lang}
-                    mode="facilities"
-                  />
+                 
+                 {/* New Matrix */}
+                 <FacilitiesMatrix projects={filteredSpecs} lang={lang} />
               </section>
             )}
 

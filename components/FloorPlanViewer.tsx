@@ -1,9 +1,10 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { ProjectName, Language, FloorNode } from '../types';
 import { FLOOR_PLAN_DATA } from '../data';
 import { translations } from '../translations';
 import { useFilters } from '../contexts/FilterContext';
-import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid, Image as ImageIcon } from 'lucide-react';
 
 interface FloorPlanViewerProps {
   activeProject: ProjectName;
@@ -66,7 +67,7 @@ const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, 
     return (
       <div 
         className={`
-          relative flex flex-col items-center justify-center p-2 border rounded shadow-sm transition-all duration-200 cursor-pointer
+          relative flex flex-col items-center justify-center p-2 border rounded shadow-sm transition-all duration-200 cursor-pointer group
           ${getColor()}
           ${isHighlighted ? 'ring-4 ring-indigo-400 scale-105 z-10 shadow-lg' : 'hover:scale-105 hover:shadow-md hover:z-10'}
           min-w-[60px] h-[80px]
@@ -80,30 +81,77 @@ const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, 
         )}
         
         {/* Tooltip */}
-        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 text-white text-xs p-2 rounded z-20 whitespace-nowrap">
-           {unit.type}
+        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 text-white text-xs p-2 rounded z-20 whitespace-nowrap shadow-xl">
+           <div className="font-bold">{unit.type}</div>
+           {unit.hasData && <div className="text-[10px] font-normal opacity-80">{unit.size} SQ.M</div>}
+           {/* Tooltip Arrow */}
+           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
         </div>
       </div>
     );
   };
 
   return (
-     <div className="flex flex-col gap-8 p-12 bg-white/50 backdrop-blur-sm rounded-xl border border-slate-200 shadow-xl min-w-max">
-        {/* Top Row */}
-        <div className="flex gap-1">
-           {topRow.map(u => <UnitBox key={u.id} unit={u} />)}
+    <div className="relative w-full h-full min-h-[500px] flex items-center justify-center bg-[#f8fafc] overflow-hidden">
+      {/* Background Graphic (Stylized Placeholder) */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]" 
+        style={{
+          backgroundImage: `linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }}
+      />
+      
+      {/* Central "Blueprint" Icon/Watermark if no image */}
+      {!floor.imageUrl && (
+        <div className="absolute inset-0 flex items-center justify-center z-0 opacity-[0.05] pointer-events-none">
+           <ImageIcon size={300} strokeWidth={0.5} />
         </div>
-        
-        {/* Corridor */}
-        <div className="h-12 bg-slate-100/50 border-y-2 border-dashed border-slate-300 flex items-center justify-center text-slate-300 font-bold tracking-[1em] uppercase select-none">
-           Corridor
-        </div>
+      )}
 
-        {/* Bottom Row - Reversed to simulate facing doors if desired, or standard order */}
-        <div className="flex gap-1">
-           {bottomRow.map(u => <UnitBox key={u.id} unit={u} />)}
+      {/* Render Image if available */}
+      {floor.imageUrl ? (
+        <div className="relative z-10 w-full h-full flex items-center justify-center p-8">
+           <img 
+             src={floor.imageUrl} 
+             alt={`${floor.label} Plan`} 
+             className="max-w-full max-h-full object-contain shadow-2xl rounded-lg" 
+           />
+           {/* Note: In a real app, we would overlay clickable SVG polygons here using coordinates */}
         </div>
-     </div>
+      ) : (
+        /* Render Schematic (Interactive Boxes) if no image */
+        <div className="relative z-10 flex flex-col items-center animate-in fade-in zoom-in duration-300 max-w-[95%]">
+           <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl border border-slate-200 shadow-2xl flex flex-col gap-6 items-center">
+              {/* Schematic Header */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-3 py-1 rounded-full text-[10px] font-medium tracking-wider uppercase shadow-sm flex items-center gap-1.5 whitespace-nowrap z-20">
+                <LayoutGrid size={10} />
+                Schematic View
+              </div>
+
+              {/* Top Row */}
+              <div className="flex gap-1.5 overflow-x-auto custom-scrollbar max-w-full pb-2">
+                {topRow.map(u => <UnitBox key={u.id} unit={u} />)}
+              </div>
+
+              {/* Corridor */}
+              <div className="w-full h-16 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center">
+                 <span className="text-slate-300 text-xs font-bold tracking-[0.5em] uppercase select-none">Corridor</span>
+              </div>
+
+              {/* Bottom Row */}
+              <div className="flex gap-1.5 overflow-x-auto custom-scrollbar max-w-full pb-2">
+                {bottomRow.map(u => <UnitBox key={u.id} unit={u} />)}
+              </div>
+           </div>
+
+           {/* "No Image" Indicator */}
+           <div className="mt-6 flex items-center gap-2 text-slate-400 bg-white/60 px-4 py-2 rounded-full border border-slate-100 backdrop-blur-sm shadow-sm select-none">
+              <AlertCircle size={14} />
+              <span className="text-xs font-medium">Visual plan loading or unavailable</span>
+           </div>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -291,7 +339,7 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
         </div>
 
         {/* Overlay Controls */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white shadow-md p-2 rounded-lg border border-slate-100">
+        <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white shadow-md p-2 rounded-lg border border-slate-100 z-30">
           <button onClick={handleZoomIn} className="p-2 text-slate-600 hover:bg-slate-50 rounded-md transition-colors" title="Zoom In">
             <ZoomIn className="w-5 h-5" />
           </button>
@@ -303,11 +351,11 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
           </button>
         </div>
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-slate-600 text-xs shadow border border-slate-200 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-slate-600 text-xs shadow border border-slate-200 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-30">
            {t.zoomTip}
         </div>
 
-        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg border border-slate-200 shadow-sm z-30">
           <h2 className="text-slate-800 font-bold text-sm tracking-wide">
             {activeProject}
           </h2>
