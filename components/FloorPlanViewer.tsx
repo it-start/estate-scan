@@ -4,7 +4,7 @@ import { ProjectName, Language, FloorNode, BuildingNode } from '../types';
 import { FLOOR_PLAN_DATA } from '../data';
 import { translations } from '../translations';
 import { useFilters } from '../contexts/FilterContext';
-import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid, Image as ImageIcon, ChevronDown, Map as MapIcon, ArrowLeft, Waves, Trees } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid, Image as ImageIcon, ChevronDown, Map as MapIcon, ArrowLeft, Waves, Trees, ArrowRight, ArrowLeft as ArrowLeftIcon } from 'lucide-react';
 
 interface FloorPlanViewerProps {
   activeProject: ProjectName;
@@ -165,26 +165,20 @@ const SiteSchematic = ({
 // --- FLOOR SCHEMATIC COMPONENT ---
 
 const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, highlight: string | null, setHighlight: (c: string | null) => void }) => {
-  // Algorithmic Layout Generator
-  // Assume a corridor layout: units split top/bottom
   const unitList = useMemo(() => {
     const units: UnitDisplayData[] = [];
     if (floor.unitRanges) {
       floor.unitRanges.forEach(range => {
         for (let i = range.start; i <= range.end; i++) {
-          // Better logic: standard usually is Prefix + number. 
-          // If prefix is 'A2', start is 1 -> 'A201' usually.
           let realId = `${range.prefix}${i.toString().padStart(2, '0')}`;
-          // Correct specific Sierra logic if needed: A2 + 01 = A201
           if (range.prefix.length === 2 && !isNaN(Number(range.prefix[1]))) {
-             // e.g. A2 -> A201
              realId = `${range.prefix}${i.toString().padStart(2, '0')}`;
           }
 
           const mapped = floor.unitMap?.[realId];
           units.push({
             id: realId,
-            type: mapped?.type || 'Unknown',
+            type: mapped?.type || 'Standard',
             size: mapped?.size || 0,
             hasData: !!mapped
           });
@@ -199,38 +193,58 @@ const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, 
   const bottomRow = unitList.slice(midPoint);
 
   // Unit Box Component
-  const UnitBox = ({ unit }: { unit: UnitDisplayData }) => {
+  const UnitBox = ({ unit, orientation }: { unit: UnitDisplayData, orientation: 'top' | 'bottom' }) => {
     const isHighlighted = highlight === unit.type;
-    // Color coding based on type if available, else generic
-    const getColor = () => {
-       if (!unit.hasData) return 'bg-slate-100 border-slate-300 text-slate-400';
-       if (unit.type.includes('1 Bedroom')) return 'bg-blue-100 border-blue-300 text-blue-700';
-       if (unit.type.includes('2 Bedroom')) return 'bg-emerald-100 border-emerald-300 text-emerald-700';
-       if (unit.type.includes('3 Bedroom')) return 'bg-amber-100 border-amber-300 text-amber-700';
-       return 'bg-slate-200 border-slate-400 text-slate-600';
+    const isDimmed = highlight !== null && !isHighlighted;
+
+    // Architectural Color Coding
+    const getTypeColor = () => {
+      if (!unit.hasData) return 'bg-slate-200';
+      if (unit.type.includes('1 Bedroom')) return 'bg-blue-400';
+      if (unit.type.includes('2 Bedroom')) return 'bg-emerald-400';
+      if (unit.type.includes('3 Bedroom')) return 'bg-amber-400';
+      return 'bg-slate-400';
     };
 
     return (
       <div 
         className={`
-          relative flex flex-col items-center justify-center p-2 border rounded shadow-sm transition-all duration-200 cursor-pointer group
-          ${getColor()}
-          ${isHighlighted ? 'ring-4 ring-indigo-400 scale-105 z-10 shadow-lg' : 'hover:scale-105 hover:shadow-md hover:z-10'}
-          min-w-[60px] h-[80px]
+          relative flex flex-col rounded-md shadow-sm transition-all duration-300 cursor-pointer group select-none
+          ${isHighlighted 
+            ? 'bg-indigo-600 text-white scale-110 z-20 shadow-xl border-indigo-500' 
+            : isDimmed 
+              ? 'bg-white text-slate-400 opacity-60 border-slate-100 scale-95'
+              : 'bg-white text-slate-700 hover:border-indigo-300 hover:shadow-md hover:-translate-y-1'
+          }
+          border w-[70px] h-[90px] shrink-0
         `}
         onMouseEnter={() => setHighlight(unit.type)}
         onMouseLeave={() => setHighlight(null)}
       >
-        <span className="font-mono text-xs font-bold">{unit.id}</span>
-        {unit.hasData && (
-          <span className="text-[10px] opacity-75">{unit.size.toFixed(0)}m²</span>
-        )}
-        
+        {/* Color Bar (Top) */}
+        <div className={`h-1.5 w-full rounded-t-sm ${getTypeColor()}`} />
+
+        <div className="flex-1 flex flex-col items-center justify-center p-1">
+          <span className={`text-[9px] font-mono mb-0.5 ${isHighlighted ? 'text-indigo-200' : 'text-slate-400'}`}>UNIT</span>
+          <span className="font-bold text-sm tracking-tight">{unit.id}</span>
+          {unit.hasData && (
+            <span className={`text-[10px] mt-1 ${isHighlighted ? 'text-indigo-100' : 'text-slate-500'}`}>
+              {unit.size.toFixed(0)} m²
+            </span>
+          )}
+        </div>
+
+        {/* Door Indicator (facing corridor) */}
+        <div className={`
+            absolute left-1/2 -translate-x-1/2 w-4 h-1 bg-slate-300 rounded-sm
+            ${orientation === 'top' ? '-bottom-0.5' : '-top-0.5'}
+            ${isHighlighted ? 'bg-indigo-300' : ''}
+        `} />
+
         {/* Tooltip */}
-        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 text-white text-xs p-2 rounded z-20 whitespace-nowrap shadow-xl">
+        <div className="absolute bottom-full mb-3 hidden group-hover:block bg-slate-800 text-white text-xs p-2 rounded z-30 whitespace-nowrap shadow-xl left-1/2 -translate-x-1/2">
            <div className="font-bold">{unit.type}</div>
            {unit.hasData && <div className="text-[10px] font-normal opacity-80">{unit.size} SQ.M</div>}
-           {/* Tooltip Arrow */}
            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800"></div>
         </div>
       </div>
@@ -238,23 +252,16 @@ const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, 
   };
 
   return (
-    <div className="relative w-full h-full min-h-[500px] flex items-center justify-center bg-[#f8fafc] overflow-hidden select-none">
-      {/* Background Graphic (Stylized Placeholder) */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]" 
+    <div className="relative w-full h-full min-h-[500px] flex items-center justify-center bg-[#f1f5f9] overflow-hidden select-none">
+      {/* Background Grid */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.05]" 
         style={{
-          backgroundImage: `linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
+          backgroundImage: `linear-gradient(#64748b 1px, transparent 1px), linear-gradient(90deg, #64748b 1px, transparent 1px)`,
+          backgroundSize: '20px 20px'
         }}
       />
       
-      {/* Central "Blueprint" Icon/Watermark if no image */}
-      {!floor.imageUrl && (
-        <div className="absolute inset-0 flex items-center justify-center z-0 opacity-[0.05] pointer-events-none">
-           <ImageIcon size={300} strokeWidth={0.5} />
-        </div>
-      )}
-
-      {/* Render Image if available */}
+      {/* Schematic Layout Container */}
       {floor.imageUrl ? (
         <div className="relative z-10 w-full h-full flex items-center justify-center p-8">
            <img 
@@ -266,35 +273,59 @@ const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, 
            />
         </div>
       ) : (
-        /* Render Schematic (Interactive Boxes) if no image */
-        <div className="relative z-10 flex flex-col items-center animate-in fade-in zoom-in duration-300 max-w-[95%]">
-           <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl border border-slate-200 shadow-2xl flex flex-col gap-6 items-center">
-              {/* Schematic Header */}
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-3 py-1 rounded-full text-[10px] font-medium tracking-wider uppercase shadow-sm flex items-center gap-1.5 whitespace-nowrap z-20">
-                <LayoutGrid size={10} />
-                Schematic View
+        <div className="relative z-10 flex flex-col items-center animate-in fade-in zoom-in duration-300 w-full max-w-4xl px-4">
+           
+           {/* Building Shell */}
+           <div className="bg-slate-100 p-8 rounded-[2rem] border-4 border-slate-300 shadow-2xl w-full relative">
+              
+              {/* Info Badge */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase shadow-lg flex items-center gap-2 z-20">
+                <LayoutGrid size={12} />
+                Schematic Layout
               </div>
 
-              {/* Top Row */}
-              <div className="flex gap-1.5 overflow-x-auto custom-scrollbar max-w-full pb-2">
-                {topRow.map(u => <UnitBox key={u.id} unit={u} />)}
-              </div>
+              {/* Scroll Container */}
+              <div className="overflow-x-auto pb-4 pt-2 px-2 custom-scrollbar flex flex-col gap-0 w-full">
+                
+                {/* Top Row Units */}
+                <div className="flex gap-2 min-w-max px-4 mx-auto border-b-2 border-slate-200 pb-1 border-dashed">
+                  {topRow.map(u => <UnitBox key={u.id} unit={u} orientation="top" />)}
+                </div>
 
-              {/* Corridor */}
-              <div className="w-full h-16 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center">
-                 <span className="text-slate-300 text-xs font-bold tracking-[0.5em] uppercase select-none">Corridor</span>
-              </div>
+                {/* Corridor */}
+                <div className="w-full h-12 bg-[#e2e8f0] relative flex items-center justify-between min-w-max mx-auto px-4 my-1 rounded">
+                   <div className="flex items-center text-slate-400/50 gap-2">
+                      <ArrowLeftIcon size={16} />
+                   </div>
+                   <span className="text-slate-400/50 text-[10px] font-bold tracking-[0.5em] uppercase select-none">Corridor</span>
+                   <div className="flex items-center text-slate-400/50 gap-2">
+                      <ArrowRight size={16} />
+                   </div>
+                </div>
 
-              {/* Bottom Row */}
-              <div className="flex gap-1.5 overflow-x-auto custom-scrollbar max-w-full pb-2">
-                {bottomRow.map(u => <UnitBox key={u.id} unit={u} />)}
+                {/* Bottom Row Units */}
+                <div className="flex gap-2 min-w-max px-4 mx-auto border-t-2 border-slate-200 pt-1 border-dashed">
+                  {bottomRow.map(u => <UnitBox key={u.id} unit={u} orientation="bottom" />)}
+                </div>
               </div>
            </div>
 
-           {/* "No Image" Indicator */}
-           <div className="mt-6 flex items-center gap-2 text-slate-400 bg-white/60 px-4 py-2 rounded-full border border-slate-100 backdrop-blur-sm shadow-sm select-none">
+           {/* Legend */}
+           <div className="mt-6 flex gap-4">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-white/60 px-2 py-1 rounded border border-slate-100">
+                 <div className="w-2 h-2 rounded-full bg-blue-400" /> 1 Bedroom
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-white/60 px-2 py-1 rounded border border-slate-100">
+                 <div className="w-2 h-2 rounded-full bg-emerald-400" /> 2 Bedroom
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-white/60 px-2 py-1 rounded border border-slate-100">
+                 <div className="w-2 h-2 rounded-full bg-amber-400" /> 3 Bedroom
+              </div>
+           </div>
+           
+           <div className="mt-2 flex items-center gap-2 text-slate-400 bg-white/60 px-4 py-2 rounded-full border border-slate-100 backdrop-blur-sm shadow-sm select-none">
               <AlertCircle size={14} />
-              <span className="text-xs font-medium">Visual plan loading or unavailable</span>
+              <span className="text-xs font-medium">Visual plan loading or unavailable. Showing schematic derived from unit inventory.</span>
            </div>
         </div>
       )}
