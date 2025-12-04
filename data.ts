@@ -329,7 +329,33 @@ export const FLOOR_PLAN_DATA: ProjectFloorPlan[] = [
          id: 'sierra-c',
          name: 'Building C',
          floors: [
-            { level: 2, label: '2nd Floor', unitCount: 19, unitRanges: [{ prefix: 'C2', start: 1, end: 19 }] },
+            { 
+              level: 2, 
+              label: '2nd Floor', 
+              unitCount: 17, 
+              unitRanges: [{ prefix: 'C2', start: 1, end: 17 }],
+              unitMap: {
+                // Extracted from Page 9
+                'C201': { type: '1 Bedroom M', size: 30.32 },
+                'C202': { type: '1 Bedroom M (M)', size: 30.32 },
+                'C203': { type: '1 Bedroom MC2 (M)', size: 30.98 },
+                'C204': { type: '1 Bedroom Plus C (M)', size: 46.54 },
+                'C205': { type: '1 Bedroom Plus', size: 44.00 },
+                'C206': { type: '1 Bedroom M (M)', size: 30.32 },
+                'C207': { type: '1 Bedroom M (M)', size: 30.32 },
+                'C208': { type: '1 Bedroom Plus (M)', size: 44.00 },
+                'C209': { type: '2 Bedroom M (M)', size: 58.07 },
+                'C210': { type: '1 Bedroom Plus (M)', size: 44.00 },
+                'C211': { type: '1 Bedroom Plus', size: 44.00 },
+                'C212': { type: '1 Bedroom Plus C', size: 46.54 },
+                'C213': { type: '1 Bedroom MC1', size: 30.32 },
+                'C214': { type: '1 Bedroom S (M)', size: 28.38 },
+                'C215': { type: '1 Bedroom S', size: 28.38 },
+                'C216': { type: '1 Bedroom S (M)', size: 28.38 },
+                'C217': { type: '1 Bedroom M', size: 30.32 },
+              },
+              notes: { en: 'Pet-Friendly Building (C) - 2nd Floor layout', ru: 'Корпус C (для питомцев) - планировка 2-го этажа' }
+            },
             { level: 3, label: '3rd Floor', unitCount: 19, unitRanges: [{ prefix: 'C3', start: 1, end: 19 }] },
             { level: 4, label: '4th Floor', unitCount: 19, unitRanges: [{ prefix: 'C4', start: 1, end: 19 }] },
             { level: 5, label: '5th Floor', unitCount: 19, unitRanges: [{ prefix: 'C5', start: 1, end: 19 }] },
@@ -348,7 +374,21 @@ export const FLOOR_PLAN_DATA: ProjectFloorPlan[] = [
          name: 'Building A',
          floors: [
             { level: 1, label: '1st Floor', unitCount: 5, unitRanges: [{ prefix: 'SH', start: 1, end: 5, description: 'Shop/Garden Units' }] },
-            { level: 2, label: '2nd Floor', unitCount: 6, unitRanges: [{ prefix: 'A2', start: 1, end: 6 }] },
+            { 
+              level: 2, 
+              label: '2nd Floor', 
+              unitCount: 6, 
+              unitRanges: [{ prefix: 'A2', start: 1, end: 6 }],
+              unitMap: {
+                // Page 4
+                'A201': { type: '2 Bedroom', size: 64 },
+                'A202': { type: '2 Bedroom', size: 64 },
+                'A203': { type: '1 Bedroom Plus', size: 46 },
+                'A204': { type: '1 Bedroom Plus', size: 46 },
+                'A205': { type: '1 Bedroom Plus', size: 46 },
+                'A206': { type: '1 Bedroom M', size: 31 },
+              }
+            },
             { level: 3, label: '3rd Floor', unitCount: 10, unitRanges: [{ prefix: 'A3', start: 1, end: 10 }] },
             { level: 4, label: '4th Floor', unitCount: 10, unitRanges: [{ prefix: 'A4', start: 1, end: 10 }] },
             { level: 5, label: '5th Floor', unitCount: 10, unitRanges: [{ prefix: 'A5', start: 1, end: 10 }] },
@@ -362,7 +402,23 @@ export const FLOOR_PLAN_DATA: ProjectFloorPlan[] = [
          name: 'Building B',
          floors: [
             { level: 1, label: '1st Floor', unitCount: 8, unitRanges: [{ prefix: 'B1', start: 1, end: 8 }] },
-            { level: 2, label: '2nd Floor', unitCount: 8, unitRanges: [{ prefix: 'B2', start: 1, end: 8 }] },
+            { 
+              level: 2, 
+              label: '2nd Floor', 
+              unitCount: 8, 
+              unitRanges: [{ prefix: 'B2', start: 1, end: 8 }],
+              unitMap: {
+                // Page 13
+                'B201': { type: '1 Bedroom S', size: 26 },
+                'B202': { type: '1 Bedroom M', size: 31 },
+                'B203': { type: '2 Bedroom', size: 64 },
+                'B204': { type: '2 Bedroom', size: 64 },
+                'B205': { type: '2 Bedroom', size: 64 },
+                'B206': { type: '1 Bedroom Plus', size: 46 },
+                'B207': { type: '1 Bedroom M', size: 31 },
+                'B208': { type: '1 Bedroom M', size: 31 },
+              }
+            },
             { level: 3, label: '3rd Floor', unitCount: 8, unitRanges: [{ prefix: 'B3', start: 1, end: 8 }] },
             { level: 4, label: '4th Floor', unitCount: 8, unitRanges: [{ prefix: 'B4', start: 1, end: 8 }] },
             { level: 5, label: '5th Floor', unitCount: 8, unitRanges: [{ prefix: 'B5', start: 1, end: 8 }] },
@@ -376,7 +432,25 @@ export const FLOOR_PLAN_DATA: ProjectFloorPlan[] = [
          name: 'Building C',
          floors: [
             { level: 1, label: '1st Floor', unitCount: 10, unitRanges: [{ prefix: 'C1', start: 1, end: 10 }] },
-            { level: 2, label: '2nd Floor', unitCount: 10, unitRanges: [{ prefix: 'C2', start: 1, end: 10 }] },
+            { 
+              level: 2, 
+              label: '2nd Floor', 
+              unitCount: 10, 
+              unitRanges: [{ prefix: 'C2', start: 1, end: 10 }],
+              unitMap: {
+                // Page 22
+                'C201': { type: '1 Bedroom M', size: 31 },
+                'C202': { type: '1 Bedroom M', size: 31 },
+                'C203': { type: '1 Bedroom M', size: 31 },
+                'C204': { type: '1 Bedroom M', size: 31 },
+                'C205': { type: '1 Bedroom Plus', size: 46 },
+                'C206': { type: '1 Bedroom Plus', size: 46 },
+                'C207': { type: '2 Bedroom', size: 64 },
+                'C208': { type: '2 Bedroom', size: 64 },
+                'C209': { type: '1 Bedroom M', size: 31 },
+                'C210': { type: '1 Bedroom S', size: 26 },
+              }
+            },
             { level: 3, label: '3rd Floor', unitCount: 10, unitRanges: [{ prefix: 'C3', start: 1, end: 10 }] },
             { level: 4, label: '4th Floor', unitCount: 10, unitRanges: [{ prefix: 'C4', start: 1, end: 10 }] },
             { level: 5, label: '5th Floor', unitCount: 10, unitRanges: [{ prefix: 'C5', start: 1, end: 10 }] },
@@ -390,7 +464,25 @@ export const FLOOR_PLAN_DATA: ProjectFloorPlan[] = [
          name: 'Building D',
          floors: [
             { level: 1, label: '1st Floor', unitCount: 10, unitRanges: [{ prefix: 'D1', start: 1, end: 10 }] },
-            { level: 2, label: '2nd Floor', unitCount: 10, unitRanges: [{ prefix: 'D2', start: 1, end: 10 }] },
+            { 
+              level: 2, 
+              label: '2nd Floor', 
+              unitCount: 10, 
+              unitRanges: [{ prefix: 'D2', start: 1, end: 10 }],
+              unitMap: {
+                // Page 31
+                'D201': { type: '1 Bedroom Plus', size: 46 },
+                'D202': { type: '1 Bedroom Plus', size: 46 },
+                'D203': { type: '1 Bedroom Plus', size: 46 },
+                'D204': { type: '1 Bedroom Plus', size: 46 },
+                'D205': { type: '1 Bedroom Plus', size: 46 },
+                'D206': { type: '1 Bedroom M', size: 31 },
+                'D207': { type: '2 Bedroom', size: 64 },
+                'D208': { type: '2 Bedroom', size: 64 },
+                'D209': { type: '1 Bedroom Plus', size: 46 },
+                'D210': { type: '2 Bedroom', size: 64 },
+              }
+            },
             { level: 3, label: '3rd Floor', unitCount: 10, unitRanges: [{ prefix: 'D3', start: 1, end: 10 }] },
             { level: 4, label: '4th Floor', unitCount: 10, unitRanges: [{ prefix: 'D4', start: 1, end: 10 }] },
             { level: 5, label: '5th Floor', unitCount: 10, unitRanges: [{ prefix: 'D5', start: 1, end: 10 }] },

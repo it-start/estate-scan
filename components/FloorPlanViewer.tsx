@@ -4,7 +4,7 @@ import { ProjectName, Language, FloorNode } from '../types';
 import { FLOOR_PLAN_DATA } from '../data';
 import { translations } from '../translations';
 import { useFilters } from '../contexts/FilterContext';
-import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid, Image as ImageIcon } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid, Image as ImageIcon, ChevronDown } from 'lucide-react';
 
 interface FloorPlanViewerProps {
   activeProject: ProjectName;
@@ -92,7 +92,7 @@ const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, 
   };
 
   return (
-    <div className="relative w-full h-full min-h-[500px] flex items-center justify-center bg-[#f8fafc] overflow-hidden">
+    <div className="relative w-full h-full min-h-[500px] flex items-center justify-center bg-[#f8fafc] overflow-hidden select-none">
       {/* Background Graphic (Stylized Placeholder) */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]" 
         style={{
@@ -114,9 +114,10 @@ const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, 
            <img 
              src={floor.imageUrl} 
              alt={`${floor.label} Plan`} 
-             className="max-w-full max-h-full object-contain shadow-2xl rounded-lg" 
+             draggable={false}
+             onDragStart={(e) => e.preventDefault()}
+             className="max-w-full max-h-full object-contain shadow-2xl rounded-lg select-none" 
            />
-           {/* Note: In a real app, we would overlay clickable SVG polygons here using coordinates */}
         </div>
       ) : (
         /* Render Schematic (Interactive Boxes) if no image */
@@ -166,6 +167,7 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
   const [isPanning, setIsPanning] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isNotesOpen, setIsNotesOpen] = useState(true);
 
   // Reset state when project changes
   useEffect(() => {
@@ -179,6 +181,7 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
     }
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
+    setIsNotesOpen(true);
   }, [activeProject]);
 
   // Derived Data
@@ -187,15 +190,25 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
   const selectedFloor = selectedBuilding?.floors.find(f => f.level === selectedFloorLevel);
 
   // Zoom Handlers
-  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.25, 3));
+  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.25, 4));
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.25, 0.5));
   const handleResetZoom = () => {
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
   };
 
+  const handleWheel = (e: React.WheelEvent) => {
+    // Basic zoom on wheel
+    // e.preventDefault(); // Note: React synthetic event prevention might not always block native scroll if passive, but works for logic
+    const delta = -e.deltaY;
+    const factor = 0.05; // smoother wheel zoom
+    const newZoom = Math.min(Math.max(zoomLevel + (delta > 0 ? factor : -factor), 0.5), 4);
+    setZoomLevel(newZoom);
+  };
+
   // Pan Handlers
   const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent text selection and native drag
     setIsPanning(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
@@ -302,10 +315,26 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
 
             {selectedFloor.notes && (
               <div className="mt-6 pt-4 border-t border-slate-100">
-                <h4 className="text-xs font-bold text-slate-500 mb-2">{t.architecturalNotes}</h4>
-                <p className="text-sm text-slate-700 leading-relaxed bg-amber-50 p-3 rounded-lg border border-amber-100 text-amber-900">
-                  {selectedFloor.notes[lang]}
-                </p>
+                <button 
+                  onClick={() => setIsNotesOpen(!isNotesOpen)}
+                  className="w-full flex items-center justify-between text-left mb-2 group"
+                >
+                  <h4 className="text-xs font-bold text-slate-500 group-hover:text-indigo-600 transition-colors">
+                    {t.architecturalNotes}
+                  </h4>
+                  <ChevronDown 
+                    size={14} 
+                    className={`text-slate-400 transition-transform duration-200 ${isNotesOpen ? 'rotate-180' : ''}`} 
+                  />
+                </button>
+                
+                {isNotesOpen && (
+                  <div className="animate-fadeIn">
+                    <p className="text-sm text-slate-700 leading-relaxed bg-amber-50 p-3 rounded-lg border border-amber-100 text-amber-900">
+                      {selectedFloor.notes[lang]}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -326,6 +355,7 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
         >
            {selectedFloor ? (
               <FloorSchematic 
