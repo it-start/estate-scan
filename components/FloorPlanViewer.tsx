@@ -1,10 +1,10 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ProjectName, Language, FloorNode } from '../types';
+import { ProjectName, Language, FloorNode, BuildingNode } from '../types';
 import { FLOOR_PLAN_DATA } from '../data';
 import { translations } from '../translations';
 import { useFilters } from '../contexts/FilterContext';
-import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid, Image as ImageIcon, ChevronDown } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize, AlertCircle, LayoutGrid, Image as ImageIcon, ChevronDown, Map as MapIcon, ArrowLeft, Waves, Trees } from 'lucide-react';
 
 interface FloorPlanViewerProps {
   activeProject: ProjectName;
@@ -17,6 +17,152 @@ interface UnitDisplayData {
   size: number;
   hasData: boolean;
 }
+
+// --- SITE SCHEMATIC COMPONENT ---
+
+// Layout configurations for the schematic site plan
+const PROJECT_LAYOUTS: Record<ProjectName, Array<{ id: string; label: string; x: number; y: number; w: number; h: number; rotate?: number; type?: 'residential' | 'facility'; tags?: string[] }>> = {
+  [ProjectName.SIERRA]: [
+    { id: 'sierra-a', label: 'Building A', x: 15, y: 15, w: 40, h: 25, type: 'residential' },
+    { id: 'sierra-b', label: 'Building B', x: 60, y: 15, w: 25, h: 25, type: 'residential', tags: ['Sold Out'] }, // Placeholder
+    { id: 'sierra-c', label: 'Building C', x: 25, y: 55, w: 50, h: 30, type: 'residential', tags: ['Pet Friendly'] },
+    { id: 'pool', label: 'Swimming Pool', x: 30, y: 42, w: 40, h: 10, type: 'facility' }
+  ],
+  [ProjectName.CORALINA]: [
+    // Loop around the lagoon
+    { id: 'coralina-a', label: 'Bldg A', x: 10, y: 10, w: 18, h: 35, type: 'residential', tags: ['Pet Friendly'] },
+    { id: 'coralina-b', label: 'Bldg B', x: 10, y: 55, w: 18, h: 35, type: 'residential', tags: ['Pet Friendly'] },
+    { id: 'coralina-c', label: 'Bldg C', x: 72, y: 55, w: 18, h: 35, type: 'residential' },
+    { id: 'coralina-d', label: 'Bldg D', x: 72, y: 10, w: 18, h: 35, type: 'residential' },
+    
+    // Central Lagoon
+    { id: 'lagoon', label: 'Grand Lagoon', x: 32, y: 20, w: 36, h: 60, type: 'facility' },
+  ],
+  [ProjectName.SERENITY]: [
+    // Linear / Lagoon layout placeholder
+    { id: 'serenity-pool', label: '400m Lagoon', x: 10, y: 40, w: 80, h: 20, type: 'facility' },
+    { id: 'serenity-a', label: 'Bldg A', x: 10, y: 10, w: 15, h: 25, type: 'residential' },
+    { id: 'serenity-b', label: 'Bldg B', x: 30, y: 10, w: 15, h: 25, type: 'residential' },
+    { id: 'serenity-c', label: 'Bldg C', x: 50, y: 10, w: 15, h: 25, type: 'residential' },
+  ]
+};
+
+const SiteSchematic = ({ 
+  project, 
+  buildings, 
+  onSelectBuilding 
+}: { 
+  project: ProjectName, 
+  buildings: BuildingNode[], 
+  onSelectBuilding: (id: string) => void 
+}) => {
+  const layout = PROJECT_LAYOUTS[project] || [];
+
+  return (
+    <div className="relative w-full h-full min-h-[500px] bg-slate-50 overflow-hidden flex items-center justify-center select-none">
+      {/* Background Texture */}
+      <div className="absolute inset-0 opacity-[0.05]" 
+        style={{
+          backgroundImage: `radial-gradient(#94a3b8 1px, transparent 1px)`,
+          backgroundSize: '20px 20px'
+        }}
+      />
+      
+      {/* Decorative Elements */}
+      <div className="absolute top-10 right-10 opacity-10">
+        <MapIcon size={120} />
+      </div>
+
+      <div className="relative w-full max-w-3xl aspect-[4/3] bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden m-4">
+        {/* Landscape/Greenery Base */}
+        <div className="absolute inset-0 bg-[#f0fdf4] opacity-50" />
+
+        {layout.map((item) => {
+          // Check if this item maps to a real building in our data
+          const buildingData = buildings.find(b => b.id === item.id);
+          const isClickable = !!buildingData;
+          const isFacility = item.type === 'facility';
+
+          return (
+            <div
+              key={item.id}
+              onClick={() => isClickable && onSelectBuilding(item.id)}
+              className={`
+                absolute flex items-center justify-center transition-all duration-300
+                ${isClickable 
+                  ? 'cursor-pointer hover:shadow-xl hover:scale-[1.02] z-20' 
+                  : isFacility 
+                    ? 'z-0' 
+                    : 'opacity-50 grayscale cursor-not-allowed z-10'
+                }
+                ${isFacility ? 'rounded-full' : 'rounded-lg border-2'}
+              `}
+              style={{
+                left: `${item.x}%`,
+                top: `${item.y}%`,
+                width: `${item.w}%`,
+                height: `${item.h}%`,
+                backgroundColor: isFacility 
+                  ? '#e0f2fe' // Light Blue for pool
+                  : isClickable 
+                    ? 'white' 
+                    : '#f1f5f9', // Slate for inactive
+                borderColor: isFacility 
+                  ? 'transparent'
+                  : isClickable 
+                    ? '#cbd5e1' 
+                    : '#e2e8f0',
+                transform: item.rotate ? `rotate(${item.rotate}deg)` : 'none'
+              }}
+            >
+              {/* Facility Visuals */}
+              {isFacility && (
+                <div className="flex flex-col items-center text-sky-300 animate-pulse">
+                  <Waves size={32} />
+                </div>
+              )}
+
+              {/* Building Label */}
+              {!isFacility && (
+                 <div className="text-center">
+                    <div className={`font-bold ${isClickable ? 'text-slate-800' : 'text-slate-400'} text-sm md:text-base`}>
+                      {item.label}
+                    </div>
+                    {isClickable ? (
+                       <div className="text-[10px] text-indigo-600 font-medium mt-1">
+                          Select View
+                       </div>
+                    ) : (
+                       <div className="text-[10px] text-slate-400 mt-1">
+                          {item.tags?.[0] || 'N/A'}
+                       </div>
+                    )}
+                 </div>
+              )}
+
+              {/* Tags (e.g. Pet Friendly) */}
+              {item.tags?.includes('Pet Friendly') && (
+                <div className="absolute -top-3 -right-3 bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full shadow-sm border border-emerald-200 flex items-center gap-1">
+                   <Trees size={10} /> Pet Friendly
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Legend / Overlay */}
+        <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-lg border border-slate-200 shadow-sm text-xs text-slate-500">
+           <div className="font-bold text-slate-800 mb-1">{project} Site Plan</div>
+           <div>Select a building to view floors</div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+
+// --- FLOOR SCHEMATIC COMPONENT ---
 
 const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, highlight: string | null, setHighlight: (c: string | null) => void }) => {
   // Algorithmic Layout Generator
@@ -156,6 +302,8 @@ const FloorSchematic = ({ floor, highlight, setHighlight }: { floor: FloorNode, 
   );
 };
 
+// --- MAIN VIEWER COMPONENT ---
+
 const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }) => {
   const t = translations[lang].floorPlan;
   const { highlightedCategory, setHighlightedCategory } = useFilters();
@@ -169,16 +317,10 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isNotesOpen, setIsNotesOpen] = useState(true);
 
-  // Reset state when project changes
+  // Reset state when project changes (Default to Site Plan)
   useEffect(() => {
-    const projectData = FLOOR_PLAN_DATA.find(p => p.project === activeProject);
-    if (projectData && projectData.buildings.length > 0) {
-      setSelectedBuildingId(projectData.buildings[0].id);
-      setSelectedFloorLevel(projectData.buildings[0].floors[0]?.level || null);
-    } else {
-      setSelectedBuildingId(null);
-      setSelectedFloorLevel(null);
-    }
+    setSelectedBuildingId(null);
+    setSelectedFloorLevel(null);
     setZoomLevel(1);
     setPosition({ x: 0, y: 0 });
     setIsNotesOpen(true);
@@ -188,6 +330,22 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
   const projectData = FLOOR_PLAN_DATA.find(p => p.project === activeProject);
   const selectedBuilding = projectData?.buildings.find(b => b.id === selectedBuildingId);
   const selectedFloor = selectedBuilding?.floors.find(f => f.level === selectedFloorLevel);
+
+  // Handlers
+  const handleSelectBuilding = (id: string) => {
+    setSelectedBuildingId(id);
+    const b = projectData?.buildings.find(b => b.id === id);
+    if (b && b.floors.length > 0) {
+      setSelectedFloorLevel(b.floors[0].level);
+    }
+  };
+
+  const handleBackToSite = () => {
+    setSelectedBuildingId(null);
+    setSelectedFloorLevel(null);
+    setZoomLevel(1);
+    setPosition({ x: 0, y: 0 });
+  };
 
   // Zoom Handlers
   const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.25, 4));
@@ -233,18 +391,53 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
     );
   }
 
+  // --- RENDER ---
+
+  // MODE: SITE PLAN
+  if (!selectedBuildingId) {
+    return (
+      <div className="flex flex-col gap-4 animate-in fade-in duration-300">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+          <div className="flex items-center gap-3">
+             <MapIcon className="text-indigo-600" size={24} />
+             <div>
+               <h2 className="text-lg font-bold text-slate-800">{activeProject} Master Layout</h2>
+               <p className="text-xs text-slate-500">Select a building to view floor plans</p>
+             </div>
+          </div>
+          <div className="text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
+             {projectData.buildings.length} Buildings Available
+          </div>
+        </div>
+
+        <div className="w-full h-[600px] rounded-xl overflow-hidden border border-slate-200 shadow-inner">
+           <SiteSchematic 
+             project={activeProject} 
+             buildings={projectData.buildings} 
+             onSelectBuilding={handleSelectBuilding} 
+           />
+        </div>
+      </div>
+    );
+  }
+
+  // MODE: BUILDING / FLOOR VIEW
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-200px)] lg:h-[700px]">
+    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-200px)] lg:h-[700px] animate-in fade-in slide-in-from-right-4 duration-300">
       
       {/* Sidebar Controls */}
       <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0">
         
-        {/* Building & Floor Selection */}
+        {/* Navigation & Selection */}
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide mb-4 flex items-center gap-2">
-            <LayoutGrid className="w-4 h-4" /> Controls
-          </h3>
-          
+          <button 
+            onClick={handleBackToSite}
+            className="mb-6 flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors uppercase tracking-wide group"
+          >
+            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+            Back to Site Plan
+          </button>
+
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">{t.selectBuilding}</label>
@@ -252,7 +445,6 @@ const FloorPlanViewer: React.FC<FloorPlanViewerProps> = ({ activeProject, lang }
                 value={selectedBuildingId || ''}
                 onChange={(e) => {
                   setSelectedBuildingId(e.target.value);
-                  // Reset floor to first available
                   const b = projectData.buildings.find(b => b.id === e.target.value);
                   if (b && b.floors.length > 0) setSelectedFloorLevel(b.floors[0].level);
                 }}
