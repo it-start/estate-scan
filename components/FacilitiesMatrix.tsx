@@ -9,6 +9,7 @@ interface FacilitiesMatrixProps {
   lang: Language;
 }
 
+
 const CATEGORIES = {
   wellness: {
     icon: Dumbbell,
