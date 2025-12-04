@@ -1,5 +1,4 @@
 
-
 import { useState, useMemo } from 'react';
 import { RAW_DATA, PROJECT_SPECS } from './data';
 import { ProjectName, Language, ProjectInfo } from './types';
@@ -12,7 +11,8 @@ import SizeDistributionChart from './components/SizeDistributionChart';
 import AudienceAnalysis from './components/AudienceAnalysis';
 import ProjectMap from './components/ProjectMap';
 import FloorPlanViewer from './components/FloorPlanViewer';
-import { Filter, Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Map, Globe, Sparkles, Users, FileText } from 'lucide-react';
+import NavigationTabs from './components/NavigationTabs'; // Import new component
+import { Layers, LayoutGrid, Building2, MapPin, Ruler, Home, Tags, Sparkles, Globe } from 'lucide-react';
 import { useFilters } from './contexts/FilterContext';
 
 const FacilityGroup = ({ facilities, lang }: { facilities: string[], lang: Language }) => {
@@ -128,29 +128,33 @@ const App = () => {
   }, [analysisMode, filteredSpecs]);
 
   return (
-    <div className="min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen h-screen flex flex-col md:flex-row bg-slate-50 text-slate-900 font-sans overflow-hidden">
       
       {/* Sidebar Filter */}
-      <aside className="w-full md:w-64 bg-white border-r border-slate-200 overflow-y-auto z-10 shrink-0 custom-scrollbar h-auto md:h-full">
-        <div className="p-6 border-b border-slate-200">
-          <div className="flex items-center justify-between">
+      <aside className="w-full md:w-64 bg-white border-r border-slate-200 z-10 shrink-0 h-full flex flex-col">
+        {/* Sidebar Header */}
+        <div className="p-6 border-b border-slate-200 shrink-0">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 text-indigo-700">
               <Building2 className="w-6 h-6" />
               <h1 className="text-xl font-bold tracking-tight">{t.sidebar.title}</h1>
             </div>
-            <button 
-              onClick={() => setLang(lang === 'en' ? 'ru' : 'en')}
-              className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors bg-slate-100 px-2 py-1 rounded"
-            >
-              <Globe className="w-3 h-3" />
-              {lang.toUpperCase()}
-            </button>
           </div>
-          <p className="text-xs text-slate-500 mt-1">{t.sidebar.subtitle}</p>
+          <p className="text-xs text-slate-500 mb-4">{t.sidebar.subtitle}</p>
+          
+          <button 
+            onClick={() => setLang(lang === 'en' ? 'ru' : 'en')}
+            className="w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-600 hover:text-indigo-600 transition-colors bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg border border-slate-200"
+          >
+            <Globe className="w-3 h-3" />
+            {lang === 'en' ? 'Switch to Russian' : 'Switch to English'}
+          </button>
         </div>
 
-        <div className="p-6 space-y-8">
-          {/* Project Filter */}
+        {/* Scrollable Filters */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+          
+          {/* Project Filter (Always Visible) */}
           <div>
             <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
               <Layers className="w-3 h-3" /> {t.sidebar.projects}
@@ -173,83 +177,42 @@ const App = () => {
             </div>
           </div>
 
-          {/* Analysis Mode Switcher */}
-          <div>
-             <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Filter className="w-3 h-3" /> {t.sidebar.analysisFocus}
-            </h3>
-            <div className="flex flex-col gap-1 p-1 bg-slate-100 rounded-lg">
-              <button 
-                onClick={() => setAnalysisMode('audience')}
-                className={`w-full flex items-center justify-center gap-1 text-xs py-1.5 rounded-md font-medium transition-all ${analysisMode === 'audience' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                <Users className="w-3 h-3" /> {t.sidebar.audience}
-              </button>
-              <div className="flex gap-1">
-                <button 
-                  onClick={() => setAnalysisMode('facilities')}
-                  className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-all ${analysisMode === 'facilities' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  {t.sidebar.facilities}
-                </button>
-                <button 
-                  onClick={() => setAnalysisMode('units')}
-                  className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-all ${analysisMode === 'units' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  {t.sidebar.unitTypes}
-                </button>
-              </div>
-              <button 
-                onClick={() => setAnalysisMode('masterplan')}
-                className={`w-full flex items-center justify-center gap-1 text-xs py-1.5 rounded-md font-medium transition-all ${analysisMode === 'masterplan' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                <Map className="w-3 h-3" /> {t.sidebar.masterPlan}
-              </button>
-              <button 
-                onClick={() => setAnalysisMode('floorplans')}
-                className={`w-full flex items-center justify-center gap-1 text-xs py-1.5 rounded-md font-medium transition-all ${analysisMode === 'floorplans' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                <FileText className="w-3 h-3" /> {t.sidebar.floorPlans}
-              </button>
-            </div>
-          </div>
+          {/* DYNAMIC FILTERS: Render based on active tab */}
 
-          {/* Facilities Filter - Only shown in 'facilities' mode */}
+          {/* Facilities Filter */}
           {analysisMode === 'facilities' && (
-            <div className="space-y-8 animate-fadeIn">
-              <div className="h-px bg-slate-200 my-4" /> 
-              <div>
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Sparkles className="w-3 h-3" /> {t.sidebar.facilities}
-                </h3>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                  {allFacilities.map(fac => (
-                    <label key={fac} className="flex items-center gap-2 cursor-pointer group">
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${selectedFacilities.has(fac) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white group-hover:border-indigo-400'}`}>
-                        {selectedFacilities.has(fac) && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                      </div>
-                      <input 
-                        type="checkbox" 
-                        className="hidden" 
-                        checked={selectedFacilities.has(fac)}
-                        onChange={() => toggleFacility(fac)}
-                      />
-                      <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-700 transition-colors">
-                        {translate(fac, lang, facilityTranslations)}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+            <div className="animate-fadeIn">
+              <div className="h-px bg-slate-200 mb-6" /> 
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Sparkles className="w-3 h-3" /> {t.sidebar.facilities}
+              </h3>
+              <div className="space-y-2">
+                {allFacilities.map(fac => (
+                  <label key={fac} className="flex items-center gap-2 cursor-pointer group">
+                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${selectedFacilities.has(fac) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white group-hover:border-indigo-400'}`}>
+                      {selectedFacilities.has(fac) && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      className="hidden" 
+                      checked={selectedFacilities.has(fac)}
+                      onChange={() => toggleFacility(fac)}
+                    />
+                    <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-700 transition-colors">
+                      {translate(fac, lang, facilityTranslations)}
+                    </span>
+                  </label>
+                ))}
               </div>
             </div>
           )}
 
-          {/* Unit Specific Filters - Shown in 'units' AND 'audience' modes because audience scoring depends on unit mix */}
+          {/* Unit Specific Filters */}
           {(analysisMode === 'units' || analysisMode === 'audience') && (
-            <div className="space-y-8 animate-fadeIn">
-              <div className="h-px bg-slate-200 my-4" /> 
+            <div className="animate-fadeIn space-y-8">
+              <div className="h-px bg-slate-200" /> 
               
-              {/* Size Range Filter */}
+              {/* Size Range */}
               <div>
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Ruler className="w-3 h-3" /> {t.sidebar.unitSize}
@@ -281,7 +244,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Category Filter */}
+              {/* Categories */}
               <div>
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <LayoutGrid className="w-3 h-3" /> {t.sidebar.unitCategories}
@@ -306,7 +269,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Sub-Category Filter */}
+              {/* Sub Categories */}
               <div>
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Tags className="w-3 h-3" /> {t.sidebar.subCategories}
@@ -330,154 +293,151 @@ const App = () => {
               </div>
             </div>
           )}
-
+        </div>
+        
+        {/* Sidebar Footer Stats */}
+        <div className="p-4 bg-slate-50 border-t border-slate-200">
+           <div className="flex justify-between items-center text-xs text-slate-500">
+              <span>{filteredData.length} {t.stats.unitsFound}</span>
+              <span className="bg-slate-200 px-2 py-0.5 rounded-full">{filteredSpecs.length} {t.stats.buildings}</span>
+           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto custom-scrollbar h-auto md:h-full">
-        <div className="max-w-7xl mx-auto space-y-8">
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-             <div>
-               <h2 className="text-2xl font-bold text-slate-900">{t.sidebar.title}</h2>
-               <p className="text-slate-500">{t.sidebar.subtitle}</p>
-             </div>
-             <div className="text-right hidden sm:block">
-               <div className="text-sm font-medium text-slate-900">{filteredData.length} {t.stats.unitsFound}</div>
-               <div className="text-xs text-slate-500">{t.stats.basedOnFilters}</div>
-             </div>
-          </div>
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col min-w-0 bg-slate-50">
+        
+        {/* Top Navigation Tabs */}
+        <NavigationTabs currentMode={analysisMode} onModeChange={setAnalysisMode} lang={lang} />
 
-          {/* Project Summary Cards - Hide in Floor Plan Mode to save space */}
-          {analysisMode !== 'floorplans' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {filteredSpecs.map(spec => (
-                <div key={spec.name} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 animate-fadeIn">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className={`text-lg font-bold ${spec.name === 'Coralina' ? 'text-rose-600' : spec.name === 'Serenity' ? 'text-emerald-600' : 'text-sky-600'}`}>
-                      {spec.name}
-                    </h3>
-                    <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full font-mono">
-                      {spec.totalUnits} {t.stats.units}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center gap-3 text-slate-600">
-                      <MapPin className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{spec.location[lang]}</span>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8">
+          <div className="max-w-7xl mx-auto space-y-8">
+            
+            {/* Project Summary Cards - Show only on specific tabs to reduce noise */}
+            {(analysisMode === 'masterplan' || analysisMode === 'audience') && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fadeIn">
+                {filteredSpecs.map(spec => (
+                  <div key={spec.name} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className={`text-lg font-bold ${spec.name === 'Coralina' ? 'text-rose-600' : spec.name === 'Serenity' ? 'text-emerald-600' : 'text-sky-600'}`}>
+                        {spec.name}
+                      </h3>
+                      <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full font-mono">
+                        {spec.totalUnits} {t.stats.units}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-3 text-slate-600">
-                      <Ruler className="w-4 h-4 shrink-0" />
-                      <span>{spec.landAreaRai} {t.stats.rai} ({spec.landAreaSqm.toLocaleString()} sqm)</span>
+                    
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center gap-3 text-slate-600">
+                        <MapPin className="w-4 h-4 shrink-0" />
+                        <span className="truncate">{spec.location[lang]}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-slate-600">
+                        <Ruler className="w-4 h-4 shrink-0" />
+                        <span>{spec.landAreaRai} {t.stats.rai}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-slate-600">
+                        <Home className="w-4 h-4 shrink-0" />
+                        <span>{spec.buildings} {t.stats.buildings}, {spec.storeys} {t.stats.storeys}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-slate-600">
-                      <Home className="w-4 h-4 shrink-0" />
-                      <span>{spec.buildings} {t.stats.buildings}, {spec.storeys} {t.stats.storeys}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-slate-600">
-                      <Layers className="w-4 h-4 shrink-0" />
-                      <span>{spec.masterPlan.facilityDensity} {t.stats.facilityDensity}</span>
+                    
+                    {/* Collapsible Facilities Mini-List */}
+                    <div className="mt-4 pt-4 border-t border-slate-100">
+                      <FacilityGroup facilities={spec.facilities} lang={lang} />
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-4 border-t border-slate-100">
-                    <p className="text-xs font-semibold text-slate-500 uppercase mb-2">{t.stats.keyFacilities}</p>
-                    <FacilityGroup facilities={spec.facilities} lang={lang} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Map Section - Hide in Floor Plan Mode */}
-          {analysisMode !== 'floorplans' && (
-            <section className="animate-fadeIn">
-              <ProjectMap projects={filteredSpecs} lang={lang} />
-            </section>
-          )}
-
-          {/* Conditional Analysis Content */}
-
-          {analysisMode === 'audience' && (
-             <AudienceAnalysis projects={filteredSpecs} allUnits={filteredData} lang={lang} />
-          )}
-
-          {analysisMode === 'masterplan' && (
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-slate-800">{t.sidebar.masterPlan}</h3>
+                ))}
               </div>
-              <MasterPlanComparison projects={filteredSpecs} lang={lang} />
-            </section>
-          )}
+            )}
 
-          {analysisMode === 'floorplans' && (
-            <section className="animate-fadeIn">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-slate-800">{t.floorPlan.title}</h3>
-                <p className="text-sm text-slate-500">{t.floorPlan.subtitle}</p>
+            {/* Analysis Content Modules */}
+
+            {analysisMode === 'audience' && (
+              <AudienceAnalysis projects={filteredSpecs} allUnits={filteredData} lang={lang} />
+            )}
+
+            {analysisMode === 'masterplan' && (
+              <div className="space-y-8 animate-fadeIn">
+                <section>
+                   <ProjectMap projects={filteredSpecs} lang={lang} />
+                </section>
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-slate-800">{t.sidebar.masterPlan}</h3>
+                  </div>
+                  <MasterPlanComparison projects={filteredSpecs} lang={lang} />
+                </section>
               </div>
-              {/* Only pass the first selected project if multiple selected, or specific one */}
-              <FloorPlanViewer 
-                activeProject={filteredSpecs.length > 0 ? filteredSpecs[0].name : ProjectName.SIERRA} 
-                lang={lang} 
-              />
-              {filteredSpecs.length > 1 && (
-                <div className="mt-4 p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg border border-yellow-200 flex items-center gap-2">
-                   <AlertCircle className="w-4 h-4" />
-                   Since multiple projects are selected, showing data for <strong>{filteredSpecs[0].name}</strong>. Deselect others in sidebar to switch.
-                </div>
-              )}
-            </section>
-          )}
+            )}
 
-          {analysisMode === 'facilities' && (
-            <section>
-               <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-slate-800">{t.setAnalysis.amenitiesTitle}</h3>
-               </div>
-               <SetAnalysis 
-                  title={t.setAnalysis.amenitiesTitle}
-                  dataSets={setAnalysisData} 
-                  lang={lang}
-                  mode="facilities"
+            {analysisMode === 'floorplans' && (
+              <section className="animate-fadeIn">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-slate-800">{t.floorPlan.title}</h3>
+                  <p className="text-sm text-slate-500">{t.floorPlan.subtitle}</p>
+                </div>
+                {/* Only pass the first selected project if multiple selected, or specific one */}
+                <FloorPlanViewer 
+                  activeProject={filteredSpecs.length > 0 ? filteredSpecs[0].name : ProjectName.SIERRA} 
+                  lang={lang} 
                 />
-            </section>
-          )}
+                {filteredSpecs.length > 1 && (
+                  <div className="mt-4 p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg border border-yellow-200 flex items-center gap-2">
+                     <AlertCircle className="w-4 h-4" />
+                     Since multiple projects are selected, showing data for <strong>{filteredSpecs[0].name}</strong>. Deselect others in sidebar to switch.
+                  </div>
+                )}
+              </section>
+            )}
 
-          {analysisMode === 'units' && (
-            <>
-              {/* Set Analysis Section */}
-              <section>
+            {analysisMode === 'facilities' && (
+              <section className="animate-fadeIn">
                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-slate-800">{t.setAnalysis.unitCatsTitle}</h3>
+                    <h3 className="text-lg font-bold text-slate-800">{t.setAnalysis.amenitiesTitle}</h3>
                  </div>
                  <SetAnalysis 
-                    title={t.setAnalysis.unitCatsTitle}
+                    title={t.setAnalysis.amenitiesTitle}
                     dataSets={setAnalysisData} 
                     lang={lang}
-                    mode="units"
+                    mode="facilities"
                   />
               </section>
+            )}
 
-              {/* Charts Section */}
-              <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                 <div>
-                    <SizeDistributionChart data={filteredData} lang={lang} />
-                 </div>
-                 <div>
-                    <AnalysisChart data={filteredData} lang={lang} />
-                 </div>
-              </section>
+            {analysisMode === 'units' && (
+              <div className="animate-fadeIn space-y-8">
+                {/* Set Analysis Section */}
+                <section>
+                   <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-slate-800">{t.setAnalysis.unitCatsTitle}</h3>
+                   </div>
+                   <SetAnalysis 
+                      title={t.setAnalysis.unitCatsTitle}
+                      dataSets={setAnalysisData} 
+                      lang={lang}
+                      mode="units"
+                    />
+                </section>
 
-              {/* Grid Section */}
-              <section>
-                <UnitTable data={filteredData} lang={lang} />
-              </section>
-            </>
-          )}
+                {/* Charts Section */}
+                <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                   <div>
+                      <SizeDistributionChart data={filteredData} lang={lang} />
+                   </div>
+                   <div>
+                      <AnalysisChart data={filteredData} lang={lang} />
+                   </div>
+                </section>
+
+                {/* Grid Section */}
+                <section>
+                  <UnitTable data={filteredData} lang={lang} />
+                </section>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>

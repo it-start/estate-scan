@@ -7,6 +7,8 @@ export interface LocalizedString {
   ru: string;
 }
 
+export type AnalysisMode = 'facilities' | 'units' | 'masterplan' | 'audience' | 'floorplans';
+
 export enum ProjectName {
   CORALINA = 'Coralina',
   SERENITY = 'Serenity',
